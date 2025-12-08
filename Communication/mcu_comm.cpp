@@ -41,36 +41,80 @@ void Class_MCU_Comm::CAN_Send_Command()
 
 void Class_MCU_Comm::CAN_Send_AutoAim()
 {
-     static uint8_t CAN_Tx_Frame_Yaw[8];
-     static uint8_t CAN_Tx_Frame_Pitch[8];
+     static uint8_t CAN_Tx_Frame[8];
 
-     CAN_Tx_Frame_Yaw[0] = MCU_AutoAim_Data.Start_Of_Yaw_Frame;
-     CAN_Tx_Frame_Pitch[0] = MCU_AutoAim_Data.Start_Of_Pitch_Frame;
+     // yaw angle
+     CAN_Tx_Frame[0] = MCU_AutoAim_Data.SOF1;
+     CAN_Tx_Frame[1] = MCU_AutoAim_Data.yaw_angle[0];
+     CAN_Tx_Frame[2] = MCU_AutoAim_Data.yaw_angle[1];
+     CAN_Tx_Frame[3] = MCU_AutoAim_Data.yaw_angle[2];
+     CAN_Tx_Frame[4] = MCU_AutoAim_Data.yaw_angle[3];
+     CAN_Tx_Frame[5] = 0x00;
+     CAN_Tx_Frame[6] = 0x00;
+     CAN_Tx_Frame[7] = 0x00;
 
-     // if(g_recived_flag == 1){
-          CAN_Tx_Frame_Yaw[1] = MCU_AutoAim_Data.Yaw[0];
-          CAN_Tx_Frame_Yaw[2] = MCU_AutoAim_Data.Yaw[1];
-          CAN_Tx_Frame_Yaw[3] = MCU_AutoAim_Data.Yaw[2];
-          CAN_Tx_Frame_Yaw[4] = MCU_AutoAim_Data.Yaw[3];
+     CAN_Send_Data(CAN_Manage_Object->CAN_Handler, CAN_Tx_ID, CAN_Tx_Frame, 8);
 
-          CAN_Tx_Frame_Pitch[1] = MCU_AutoAim_Data.Pitch[0];
-          CAN_Tx_Frame_Pitch[2] = MCU_AutoAim_Data.Pitch[1];
-          CAN_Tx_Frame_Pitch[3] = MCU_AutoAim_Data.Pitch[2];
-          CAN_Tx_Frame_Pitch[4] = MCU_AutoAim_Data.Pitch[3];
-          g_recived_flag = 0;
-     // }else{
-     //      CAN_Tx_Frame_Yaw[1] = 0x00;
-     //      CAN_Tx_Frame_Yaw[2] = 0x00;
-     //      CAN_Tx_Frame_Yaw[3] = 0x00;
-     //      CAN_Tx_Frame_Yaw[4] = 0x00;
+     //yaw omega
+     CAN_Tx_Frame[0] = MCU_AutoAim_Data.SOF2;
+     CAN_Tx_Frame[1] = MCU_AutoAim_Data.yaw_omega[0];
+     CAN_Tx_Frame[2] = MCU_AutoAim_Data.yaw_omega[1];
+     CAN_Tx_Frame[3] = MCU_AutoAim_Data.yaw_omega[2];
+     CAN_Tx_Frame[4] = MCU_AutoAim_Data.yaw_omega[3];
+     CAN_Tx_Frame[5] = 0x00;
+     CAN_Tx_Frame[6] = 0x00;
+     CAN_Tx_Frame[7] = 0x00;
 
-     //      CAN_Tx_Frame_Pitch[1] = 0x00;
-     //      CAN_Tx_Frame_Pitch[2] = 0x00;
-     //      CAN_Tx_Frame_Pitch[3] = 0x00;
-     //      CAN_Tx_Frame_Pitch[4] = 0x00;
-     // }
-     CAN_Send_Data(CAN_Manage_Object->CAN_Handler, CAN_Tx_ID, CAN_Tx_Frame_Yaw, 8);
-     CAN_Send_Data(CAN_Manage_Object->CAN_Handler, CAN_Tx_ID, CAN_Tx_Frame_Pitch, 8);
+     CAN_Send_Data(CAN_Manage_Object->CAN_Handler, CAN_Tx_ID, CAN_Tx_Frame, 8);
+
+     // yaw torque
+     CAN_Tx_Frame[0] = MCU_AutoAim_Data.SOF2;
+     CAN_Tx_Frame[1] = MCU_AutoAim_Data.yaw_torque[0];
+     CAN_Tx_Frame[2] = MCU_AutoAim_Data.yaw_torque[1];
+     CAN_Tx_Frame[3] = MCU_AutoAim_Data.yaw_torque[2];
+     CAN_Tx_Frame[4] = MCU_AutoAim_Data.yaw_torque[3];
+     CAN_Tx_Frame[5] = 0x00;
+     CAN_Tx_Frame[6] = 0x00;
+     CAN_Tx_Frame[7] = 0x00;
+
+     CAN_Send_Data(CAN_Manage_Object->CAN_Handler, CAN_Tx_ID, CAN_Tx_Frame, 8);
+   
+     // pitch angle
+     CAN_Tx_Frame[0] = MCU_AutoAim_Data.SOF4;
+     CAN_Tx_Frame[1] = MCU_AutoAim_Data.pitch_angle[0];
+     CAN_Tx_Frame[2] = MCU_AutoAim_Data.pitch_angle[1];
+     CAN_Tx_Frame[3] = MCU_AutoAim_Data.pitch_angle[2];
+     CAN_Tx_Frame[4] = MCU_AutoAim_Data.pitch_angle[3];
+     CAN_Tx_Frame[5] = 0x00;
+     CAN_Tx_Frame[6] = 0x00;
+     CAN_Tx_Frame[7] = 0x00;
+
+     CAN_Send_Data(CAN_Manage_Object->CAN_Handler, CAN_Tx_ID, CAN_Tx_Frame, 8);
+
+     // pitch omega
+     CAN_Tx_Frame[0] = MCU_AutoAim_Data.SOF5;
+     CAN_Tx_Frame[1] = MCU_AutoAim_Data.pitch_omega[0];
+     CAN_Tx_Frame[2] = MCU_AutoAim_Data.pitch_omega[1];
+     CAN_Tx_Frame[3] = MCU_AutoAim_Data.pitch_omega[2];
+     CAN_Tx_Frame[4] = MCU_AutoAim_Data.pitch_omega[3];
+     CAN_Tx_Frame[5] = 0x00;
+     CAN_Tx_Frame[6] = 0x00;
+     CAN_Tx_Frame[7] = 0x00;
+
+     CAN_Send_Data(CAN_Manage_Object->CAN_Handler, CAN_Tx_ID, CAN_Tx_Frame, 8);
+
+     // pitch torque
+     CAN_Tx_Frame[0] = MCU_AutoAim_Data.SOF6;
+     CAN_Tx_Frame[1] = MCU_AutoAim_Data.pitch_torque[0];
+     CAN_Tx_Frame[2] = MCU_AutoAim_Data.pitch_torque[1];
+     CAN_Tx_Frame[3] = MCU_AutoAim_Data.pitch_torque[2];
+     CAN_Tx_Frame[4] = MCU_AutoAim_Data.pitch_torque[3];
+     CAN_Tx_Frame[5] = 0x00;
+     CAN_Tx_Frame[6] = 0x00;
+     CAN_Tx_Frame[7] = 0x00;
+
+     CAN_Send_Data(CAN_Manage_Object->CAN_Handler, CAN_Tx_ID, CAN_Tx_Frame, 8);
+   
 }
 
 void Class_MCU_Comm::CanSendImu()
@@ -109,21 +153,22 @@ void Class_MCU_Comm::Data_Process()
 
 void Class_MCU_Comm::CAN_RxCpltCallback(uint8_t* Rx_Data)
 {
-     // 判断在线
-
-     // 处理数据
-     union { float f; uint8_t b[4]; } conv;
-
      // 判断是哪一帧
-     if (Rx_Data[4] == 0xBA)   // ---- 第二帧 (Pitch)
+     switch (Rx_Data[0])
      {
-          memcpy(MCU_Recv_Data.Pitch, Rx_Data, 4 * sizeof(uint8_t));
-     }
-     else if ((Rx_Data[0] == 0xAB)&&((Rx_Data[1] == 0x00)||(Rx_Data[1] == 0x01)))                     // ---- 第一帧 (Yaw)
-     {
-          MCU_Recv_Data.Start_Of_Frame = Rx_Data[0];
-          MCU_Recv_Data.Armor = Rx_Data[1];
-
-          memcpy(MCU_Recv_Data.Yaw, &Rx_Data[2], 4 * sizeof(uint8_t));
+          case 0x0A: //第一帧
+               memcpy(MCU_Recv_Data.Yaw_Angle, &Rx_Data[1], 4 * sizeof(uint8_t));
+               break;
+          case 0x0B: //第二帧
+               memcpy(MCU_Recv_Data.Yaw_Omega, &Rx_Data[1], 4 * sizeof(uint8_t));
+               break;
+          case 0x0C: //第三帧
+               memcpy(MCU_Recv_Data.Pitch_Angle, &Rx_Data[1], 4 * sizeof(uint8_t));
+               break;
+          case 0x0D: //第四帧
+               memcpy(MCU_Recv_Data.Pitch_Omega, &Rx_Data[1], 4 * sizeof(uint8_t));
+               break;
+          default:
+               break;
      }
 }

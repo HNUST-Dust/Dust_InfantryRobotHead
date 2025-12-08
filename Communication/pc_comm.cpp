@@ -11,20 +11,15 @@ void Class_PC_Comm::Init()
 
 void Class_PC_Comm::Send_Message()
 {
-    uint8_t buffer[16];
-    memcpy(buffer, &PC_Send_Data, sizeof(Struct_PC_Send_Data));
-    USB_Transmit(buffer,16);
+    uint8_t buffer[43];
+    memcpy(buffer, &PC_Send_Data, sizeof(PCSendAutoAimData));
+    USB_Transmit(buffer,43);
 }
 
 void Class_PC_Comm::RxCpltCallback()
 {
-    if (PC_Recv_Data.Start_Of_Frame == bsp_usb_rx_buffer[0]){
+    if (PC_Recv_Data.head[0] == 'S' && PC_Recv_Data.head[1] == 'P'){
         g_recived_flag = 1;
-        
-        memcpy(PC_Recv_Data.Yaw,&bsp_usb_rx_buffer[1],4);
-        memcpy(PC_Recv_Data.Pitch,&bsp_usb_rx_buffer[5],4);
-        PC_Recv_Data.Fire       = bsp_usb_rx_buffer[9];
-        PC_Recv_Data.CRC16[0]   = bsp_usb_rx_buffer[10];
-        PC_Recv_Data.CRC16[1]   = bsp_usb_rx_buffer[11];
+        memcpy(&PC_Recv_Data,&bsp_usb_rx_buffer,29 * sizeof(uint8_t));
     }
 }

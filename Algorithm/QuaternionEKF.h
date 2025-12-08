@@ -77,4 +77,5 @@ void IMU_QuaternionEKF_Reset(void);
 float Get_Pitch(void);//get pitch
 float Get_Roll(void);//get roll
 float Get_Yaw(void);//get yaw
+void Get_q(float out[4]);//get quaternion
 #endif

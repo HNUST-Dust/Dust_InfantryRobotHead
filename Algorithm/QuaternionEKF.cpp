@@ -521,6 +521,15 @@ float Get_Yaw()
 {
 	return QEKF_INS.Yaw;
 }
+
+void Get_q(float out[4])
+{
+    out[0] = QEKF_INS.q[0];
+    out[1] = QEKF_INS.q[1];
+    out[2] = QEKF_INS.q[2];
+    out[3] = QEKF_INS.q[3];
+}
+
 // /**
 //  * @brief 自定义1/sqrt(x),速度更快
 //  *

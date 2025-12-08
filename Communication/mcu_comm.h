@@ -2,6 +2,7 @@
 #define COMM_H
 #include "drv_can.h"
 #include <cstdint>
+#include <stdint.h>
 
 struct Struct_MCU_Comm_Data
 {
@@ -17,18 +18,26 @@ struct Struct_MCU_Comm_Data
 
 struct Struct_MCU_Recv_Data
 {
-    uint8_t Start_Of_Frame;
-    uint8_t Armor;
-    uint8_t Yaw[4];
-    uint8_t Pitch[4];
+    uint8_t Yaw_Angle[4];
+    uint8_t Yaw_Omega[4];
+    uint8_t Pitch_Angle[4];
+    uint8_t Pitch_Omega[4];
 };
 
-struct Struct_MCU_AutoAim_Data
+struct McuAutoaimData
 {
-    uint8_t Start_Of_Yaw_Frame;
-    uint8_t Start_Of_Pitch_Frame;
-    uint8_t Yaw[4];
-    uint8_t Pitch[4];
+    uint8_t SOF1 = 0xFA;
+    uint8_t yaw_angle[4];
+    uint8_t SOF2 = 0xFB;
+    uint8_t yaw_omega[4];
+    uint8_t SOF3 = 0xFC;
+    uint8_t yaw_torque[4];
+    uint8_t SOF4 = 0xFD;
+    uint8_t pitch_angle[4];
+    uint8_t SOF5 = 0xFE;
+    uint8_t pitch_omega[4];
+    uint8_t SOF6 = 0xFF;
+    uint8_t pitch_torque[4];
 };
 
 struct McuImuData
@@ -54,11 +63,19 @@ public:
         1,
     };
 
-    Struct_MCU_AutoAim_Data MCU_AutoAim_Data = {
-        0xAC,
-        0xAD,
+    McuAutoaimData MCU_AutoAim_Data = {
+        0xFA,
         {0x00,0x00,0x00,0x00},
+        0xFB,
         {0x00,0x00,0x00,0x00},
+        0xFC,
+        {0x00,0x00,0x00,0x00},
+        0xFD,
+        {0x00,0x00,0x00,0x00},
+        0xFE,
+        {0x00,0x00,0x00,0x00},
+        0xFF,
+        {0x00,0x00,0x00,0x00},        
     };
 
     McuImuData mcu_imu_data_ = {
@@ -69,10 +86,10 @@ public:
     };
 
     Struct_MCU_Recv_Data MCU_Recv_Data = {
-    0xAB,
-        0x00,
         {0x00,0x00,0x00,0x00},
         {0x00,0x00,0x00,0x00},
+        {0x00,0x00,0x00,0x00},
+        {0x00,0x00,0x00,0x00}
     };
 
     void Init(FDCAN_HandleTypeDef *hcan,

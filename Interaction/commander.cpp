@@ -1,4 +1,5 @@
 #include "booster.h"
+#include "imu_temp_ctrl.h"
 #include "mcu_comm.h"
 #include "pc_comm.h"
 
@@ -8,6 +9,7 @@
 #include "commander.h"
 #include "spi.h"
 #include "debug_tools.h"
+#include <cstring>
 
 void Class_Commander::Init()
 {
@@ -68,14 +70,24 @@ void Class_Commander::Task()
         MCU_Comm.CAN_Send_Command();
 
         // 将下板传回的数据发送给上位机
-        PC_Comm.PC_Send_Data.Armor = 0x00;
-        memcpy(PC_Comm.PC_Send_Data.Yaw, MCU_Comm.MCU_Recv_Data.Yaw, 4);
-        memcpy(PC_Comm.PC_Send_Data.Pitch, MCU_Comm.MCU_Recv_Data.Pitch, 4);
+        PC_Comm.PC_Send_Data.mode = 1; // 自瞄模式
+        memcpy(&PC_Comm.PC_Send_Data.q,&g_q,4 * sizeof(float));
+        memcpy(&PC_Comm.PC_Send_Data.yaw.yaw_ang, MCU_Comm.MCU_Recv_Data.Yaw_Angle, 4);
+        memcpy(&PC_Comm.PC_Send_Data.yaw.yaw_vel, MCU_Comm.MCU_Recv_Data.Yaw_Omega, 4);
+        memcpy(&PC_Comm.PC_Send_Data.pitch.pitch_ang, MCU_Comm.MCU_Recv_Data.Pitch_Angle, 4);
+        memcpy(&PC_Comm.PC_Send_Data.pitch.pitch_vel, MCU_Comm.MCU_Recv_Data.Pitch_Omega, 4);
+        PC_Comm.PC_Send_Data.bullet.bullet_speed = 20.0f; // 子弹速度20m/s
+        PC_Comm.PC_Send_Data.bullet.bullet_count = 1; // 子弹累计发送次数
+        PC_Comm.PC_Send_Data.crc16 = 0; // TODO: 计算CRC16校验码
         PC_Comm.Send_Message();
 
         // 将上位机传回的数据发送给下板
-        memcpy(MCU_Comm.MCU_AutoAim_Data.Yaw,&PC_Comm.PC_Recv_Data.Yaw,4 * sizeof(uint8_t));
-        memcpy(MCU_Comm.MCU_AutoAim_Data.Pitch,&PC_Comm.PC_Recv_Data.Pitch,4 * sizeof(uint8_t));
+        memcpy(MCU_Comm.MCU_AutoAim_Data.yaw_angle,&PC_Comm.PC_Recv_Data.yaw.yaw_ang,4 * sizeof(uint8_t));
+        memcpy(MCU_Comm.MCU_AutoAim_Data.yaw_omega,&PC_Comm.PC_Recv_Data.yaw.yaw_vel,4 * sizeof(uint8_t));
+        memcpy(MCU_Comm.MCU_AutoAim_Data.yaw_torque,&PC_Comm.PC_Recv_Data.yaw.yaw_acc,4 * sizeof(uint8_t));
+        memcpy(MCU_Comm.MCU_AutoAim_Data.pitch_angle,&PC_Comm.PC_Recv_Data.pitch.pitch_ang,4 * sizeof(uint8_t));
+        memcpy(MCU_Comm.MCU_AutoAim_Data.pitch_omega,&PC_Comm.PC_Recv_Data.pitch.pitch_vel,4 * sizeof(uint8_t));
+        memcpy(MCU_Comm.MCU_AutoAim_Data.pitch_torque,&PC_Comm.PC_Recv_Data.pitch.pitch_acc,4 * sizeof(uint8_t));
         MCU_Comm.CAN_Send_AutoAim();
 
         // 将陀螺仪数据发送给下板
