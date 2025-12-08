@@ -23,13 +23,12 @@ float gyro[3], accel[3], temp; //陀螺仪原始值
 float gyro_correct[3]={0};  //0飘初始值
 float RefTemp = 40;   //Destination
 float g_roll,g_pitch,g_yaw=0;//欧拉角
-uint8_t attitude_flag=0;
+uint8_t attitude_flag=1;
 uint32_t correct_times=0;
 
 
 void INS_Init(void)
 {
-	
     IMU_QuaternionEKF_Init(10, 0.001, 10000000, 1, 0.001f,0); //ekf初始化
 	PID_init(&Temperature_PID, PID_POSITION,Temperature_PID_Para,2000,200); //加热pidlimit
 	Mahony_Init(1000);  //mahony姿态解算初始化

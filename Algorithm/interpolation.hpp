@@ -27,6 +27,7 @@ public:
         point_num_ = point_num;
         state_ = INTERPOLATION_STATE_START;
     }
+    
     float Output()
     {
         static uint8_t times;
@@ -41,7 +42,6 @@ public:
         }
         return output_;
     }
-
 };
 
 

@@ -7,6 +7,7 @@
 #include "VT03.h"
 #include "commander.h"
 #include "spi.h"
+#include "debug_tools.h"
 
 void Class_Commander::Init()
 {
@@ -79,6 +80,8 @@ void Class_Commander::Task()
 
         // 将陀螺仪数据发送给下板
         MCU_Comm.CanSendImu();
+        debugtools_.VofaSendFloat(g_yaw);
+        debugtools_.VofaSendTail();
         osDelay(pdMS_TO_TICKS(1));
     }
 }

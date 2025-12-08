@@ -30,7 +30,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "SEGGER_SYSVIEW.h"
 
 /* USER CODE END Includes */
 
@@ -110,7 +109,6 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  traceSTART();
 
   /* USER CODE END 2 */
 

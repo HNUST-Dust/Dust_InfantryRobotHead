@@ -5,6 +5,7 @@
 #include "bsp_usb.h"
 #include "bsp_usart.h"
 #include "commander.h"
+#include "stm32h7xx_hal_gpio.h"
 #include <cstdint>
 #include <sys/types.h>
 
@@ -153,6 +154,7 @@ void usb_tx_callback(uint16_t len)
 void Init()
 {
     osDelay(10000);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
     // USB初始化
     USB_Init(usb_tx_callback,usb_rx_callback);
     // UART1 初始化，新图传通讯

@@ -24,8 +24,6 @@
 #endif
 
 
-
-
 typedef struct
 {
     uint8_t Initialized;

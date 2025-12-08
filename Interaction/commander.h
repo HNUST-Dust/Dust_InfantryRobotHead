@@ -10,6 +10,7 @@
 #include "booster.h"
 #include "IMU.hpp"
 // module
+#include "debug_tools.h"
 #include "mcu_comm.h"
 #include "pc_comm.h"
 #include "VT03.h"
@@ -27,7 +28,8 @@ public:
     Class_PC_Comm PC_Comm;
     // 发射机构
     Class_Booster Booster;
-
+    // 调试工具
+    DebugTools debugtools_;
     /**
      * @brief 控制台初始化
      */
