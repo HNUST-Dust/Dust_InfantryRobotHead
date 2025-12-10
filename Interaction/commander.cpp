@@ -55,14 +55,18 @@ void Class_Commander::Task()
             }
         }
         //遥控器扳机键逻辑
-        if (VT03.Data.Right_Key == VT03_Key_Status_PRESSED || VT03.Data.Keyboard_Key[8] == VT03_Key_Status_PRESSED){
+        if (VT03.Data.Right_Key == VT03_Key_Status_PRESSED 
+            || VT03.Data.Keyboard_Key[8] == VT03_Key_Status_PRESSED){
             Booster.Set_Reverse_Statue(1);
-        }else if (VT03.Data.Right_Key == VT03_Key_Status_FREE || VT03.Data.Keyboard_Key[8] == VT03_Key_Status_FREE){
+        }else if (VT03.Data.Right_Key == VT03_Key_Status_FREE 
+            || VT03.Data.Keyboard_Key[8] == VT03_Key_Status_FREE){
             Booster.Set_Reverse_Statue(0);
         }
-        if (VT03.Data.Trigger == VT03_Key_Status_PRESSED || VT03.Data.Mouse_Left_Key == VT03_Key_Status_PRESSED){
+        if (VT03.Data.Trigger == VT03_Key_Status_PRESSED 
+            || VT03.Data.Mouse_Left_Key == VT03_Key_Status_PRESSED){
             Booster.Set_Shoot_Statue(1);
-        }else if (VT03.Data.Trigger == VT03_Key_Status_FREE || VT03.Data.Mouse_Left_Key == VT03_Key_Status_FREE){
+        }else if (VT03.Data.Trigger == VT03_Key_Status_FREE 
+            || VT03.Data.Mouse_Left_Key == VT03_Key_Status_FREE){
             Booster.Set_Shoot_Statue(0);
         }
 
@@ -71,29 +75,51 @@ void Class_Commander::Task()
 
         // 将下板传回的数据发送给上位机
         PC_Comm.PC_Send_Data.mode = 1; // 自瞄模式
-        memcpy(&PC_Comm.PC_Send_Data.q,&g_q,4 * sizeof(float));
-        memcpy(&PC_Comm.PC_Send_Data.yaw.yaw_ang, MCU_Comm.MCU_Recv_Data.Yaw_Angle, 4);
-        memcpy(&PC_Comm.PC_Send_Data.yaw.yaw_vel, MCU_Comm.MCU_Recv_Data.Yaw_Omega, 4);
-        memcpy(&PC_Comm.PC_Send_Data.pitch.pitch_ang, MCU_Comm.MCU_Recv_Data.Pitch_Angle, 4);
-        memcpy(&PC_Comm.PC_Send_Data.pitch.pitch_vel, MCU_Comm.MCU_Recv_Data.Pitch_Omega, 4);
+        memcpy(&PC_Comm.PC_Send_Data.q,
+            &g_q,
+            4 * sizeof(float));
+        memcpy(&PC_Comm.PC_Send_Data.yaw.yaw_ang, 
+            MCU_Comm.MCU_Recv_Data.Yaw_Angle, 
+            4);
+        memcpy(&PC_Comm.PC_Send_Data.yaw.yaw_vel, 
+            MCU_Comm.MCU_Recv_Data.Yaw_Omega, 
+            4);
+        memcpy(&PC_Comm.PC_Send_Data.pitch.pitch_ang, 
+            MCU_Comm.MCU_Recv_Data.Pitch_Angle, 
+            4);
+        memcpy(&PC_Comm.PC_Send_Data.pitch.pitch_vel, 
+            MCU_Comm.MCU_Recv_Data.Pitch_Omega, 
+            4);
         PC_Comm.PC_Send_Data.bullet.bullet_speed = 20.0f; // 子弹速度20m/s
         PC_Comm.PC_Send_Data.bullet.bullet_count = 1; // 子弹累计发送次数
         PC_Comm.PC_Send_Data.crc16 = 0; // TODO: 计算CRC16校验码
         PC_Comm.Send_Message();
 
         // 将上位机传回的数据发送给下板
-        memcpy(MCU_Comm.MCU_AutoAim_Data.yaw_angle,&PC_Comm.PC_Recv_Data.yaw.yaw_ang,4 * sizeof(uint8_t));
-        memcpy(MCU_Comm.MCU_AutoAim_Data.yaw_omega,&PC_Comm.PC_Recv_Data.yaw.yaw_vel,4 * sizeof(uint8_t));
-        memcpy(MCU_Comm.MCU_AutoAim_Data.yaw_torque,&PC_Comm.PC_Recv_Data.yaw.yaw_acc,4 * sizeof(uint8_t));
-        memcpy(MCU_Comm.MCU_AutoAim_Data.pitch_angle,&PC_Comm.PC_Recv_Data.pitch.pitch_ang,4 * sizeof(uint8_t));
-        memcpy(MCU_Comm.MCU_AutoAim_Data.pitch_omega,&PC_Comm.PC_Recv_Data.pitch.pitch_vel,4 * sizeof(uint8_t));
-        memcpy(MCU_Comm.MCU_AutoAim_Data.pitch_torque,&PC_Comm.PC_Recv_Data.pitch.pitch_acc,4 * sizeof(uint8_t));
-        MCU_Comm.CAN_Send_AutoAim();
+        memcpy(MCU_Comm.MCU_AutoAim_Data.yaw_angle,
+            &PC_Comm.PC_Recv_Data.yaw.yaw_ang,
+            4 * sizeof(uint8_t));
+        memcpy(MCU_Comm.MCU_AutoAim_Data.yaw_omega,
+            &PC_Comm.PC_Recv_Data.yaw.yaw_vel,
+            4 * sizeof(uint8_t));
+        memcpy(MCU_Comm.MCU_AutoAim_Data.yaw_torque,
+            &PC_Comm.PC_Recv_Data.yaw.yaw_acc,
+            4 * sizeof(uint8_t));
+        memcpy(MCU_Comm.MCU_AutoAim_Data.pitch_angle,
+            &PC_Comm.PC_Recv_Data.pitch.pitch_ang,
+            4 * sizeof(uint8_t));
+        memcpy(MCU_Comm.MCU_AutoAim_Data.pitch_omega,
+            &PC_Comm.PC_Recv_Data.pitch.pitch_vel,
+            4 * sizeof(uint8_t));
+        memcpy(MCU_Comm.MCU_AutoAim_Data.pitch_torque,
+            &PC_Comm.PC_Recv_Data.pitch.pitch_acc,
+            4 * sizeof(uint8_t));
+        //MCU_Comm.CAN_Send_AutoAim();
 
         // 将陀螺仪数据发送给下板
         MCU_Comm.CanSendImu();
-        debugtools_.VofaSendFloat(g_yaw);
-        debugtools_.VofaSendTail();
+        // debugtools_.VofaSendFloat(g_yaw);
+        // debugtools_.VofaSendTail();
         osDelay(pdMS_TO_TICKS(1));
     }
 }
