@@ -521,6 +521,10 @@ float Get_Yaw()
 {
 	return QEKF_INS.Yaw;
 }
+float Get_YawTotal()
+{
+    return QEKF_INS.YawTotalAngle;
+}
 
 void Get_q(float out[4])
 {

@@ -23,6 +23,7 @@ float gyro[3], accel[3], temp; //陀螺仪原始值
 float gyro_correct[3]={0};  //0飘初始值
 float RefTemp = 40;   //Destination
 float g_roll,g_pitch,g_yaw=0;//欧拉角
+float g_total_yaw=0;
 float g_q[4] = {0,0,0,0};//四元数
 uint8_t attitude_flag=1;
 uint32_t correct_times=0;
@@ -97,6 +98,7 @@ void INS_Task(void)  //1khz
 			g_pitch = Get_Pitch(); //获得pitch
 			g_roll = Get_Roll();//获得roll
 			g_yaw = Get_Yaw();//获得yaw
+			g_total_yaw=Get_YawTotal(); //获得总yaw角度
 			Get_q(g_q); //获得四元数
 			//==============================================================================
 		}

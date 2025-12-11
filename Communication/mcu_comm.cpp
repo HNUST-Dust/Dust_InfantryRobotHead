@@ -124,7 +124,7 @@ void Class_MCU_Comm::CanSendImu()
      // 把float转换成字节
      union { float f; uint8_t b[4]; } conv;
      // conv.f = INS.YawTotalAngle;
-     conv.f = g_yaw;
+     conv.f = g_total_yaw;
      can_tx_frame[1] = conv.b[0];
      can_tx_frame[2] = conv.b[1];
      can_tx_frame[3] = conv.b[2];
