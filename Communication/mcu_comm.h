@@ -6,7 +6,6 @@
 
 struct Struct_MCU_Comm_Data
 {
-    uint8_t Start_Of_Frame;     // 帧头
     uint8_t Yaw_Angle;          // 偏移角度
     uint8_t Pitch_Angle;        // 俯仰角度
     uint8_t Chassis_Speed_X;    // 平移方向：前、后、左、右
@@ -15,6 +14,7 @@ struct Struct_MCU_Comm_Data
     uint8_t Chassis_Spin;       // 小陀螺：不转、顺时针转、逆时针转
     uint8_t Supercap;           // 超级电容：充电、放电
 };
+constexpr uint8_t REMOTE_CONTRL_ID = 0xAB;
 
 struct Struct_MCU_Recv_Data
 {
@@ -23,37 +23,34 @@ struct Struct_MCU_Recv_Data
     uint8_t Pitch_Angle[4];
     uint8_t Pitch_Omega[4];
 };
+constexpr uint16_t YAW_INFO_ID      = 0x0A;
+constexpr uint16_t PITCH_INFO_ID    = 0x0B;
 
 struct McuAutoaimData
 {
-    uint8_t SOF1 = 0xFA;
     uint8_t yaw_angle[4];
-    uint8_t SOF2 = 0xFB;
     uint8_t yaw_omega[4];
-    uint8_t SOF3 = 0xFC;
     uint8_t yaw_torque[4];
-    uint8_t SOF4 = 0xFD;
     uint8_t pitch_angle[4];
-    uint8_t SOF5 = 0xFE;
     uint8_t pitch_omega[4];
-    uint8_t SOF6 = 0xFF;
     uint8_t pitch_torque[4];
 };
+constexpr uint8_t AUTOAIM_ANGLE_ID    = 0xFA;
+constexpr uint8_t AUTOAIM_OMEGA_ID    = 0xFB;
+constexpr uint8_t AUTOAIM_TORQUE_ID   = 0xFC;
 
 struct McuImuData
 {
-    uint8_t start_of_yaw_frame;
-    uint8_t start_of_pitch_frame;
     uint8_t yaw[4];
     uint8_t pitch[4];
 };
+constexpr uint8_t IMU_INFO_ID    = 0xAE;
 
 class Class_MCU_Comm
 {
 public:
 
     Struct_MCU_Comm_Data MCU_Comm_Data = {
-        0xAB,
         127,
         127,
         127,
@@ -64,23 +61,15 @@ public:
     };
 
     McuAutoaimData MCU_AutoAim_Data = {
-        0xFA,
         {0x00,0x00,0x00,0x00},
-        0xFB,
         {0x00,0x00,0x00,0x00},
-        0xFC,
         {0x00,0x00,0x00,0x00},
-        0xFD,
         {0x00,0x00,0x00,0x00},
-        0xFE,
         {0x00,0x00,0x00,0x00},
-        0xFF,
-        {0x00,0x00,0x00,0x00},        
+        {0x00,0x00,0x00,0x00},
     };
 
     McuImuData mcu_imu_data_ = {
-        0xAE,
-        0xAF,
         {0,0,0,0},
         {0,0,0,0},
     };
@@ -97,8 +86,8 @@ public:
               uint8_t __CAN_Tx_ID
               );
 
-    void CAN_RxCpltCallback(uint8_t *Rx_Data);
-
+    void CAN_Pitch_RxCpltCallback(uint8_t *Rx_Data);
+    void CAN_Yaw_RxCpltCallback(uint8_t *Rx_Data);
     void CAN_Send_Command();
     void CAN_Send_AutoAim();
     void CanSendImu();

@@ -5,6 +5,7 @@
 #include "bsp_usb.h"
 #include "bsp_usart.h"
 #include "commander.h"
+#include "mcu_comm.h"
 #include "stm32h7xx_hal_gpio.h"
 #include <cstdint>
 #include <sys/types.h>
@@ -57,9 +58,14 @@ void Device_CAN2_Callback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 {
     switch (CAN_RxMessage->Header.Identifier)
     {
-    case (0x00):
+        case (YAW_INFO_ID):
         {
-            Commander.MCU_Comm.CAN_RxCpltCallback(CAN_RxMessage->Data);
+            Commander.MCU_Comm.CAN_Yaw_RxCpltCallback(CAN_RxMessage->Data);
+            break;
+        }
+        case (PITCH_INFO_ID):
+        {
+            Commander.MCU_Comm.CAN_Pitch_RxCpltCallback(CAN_RxMessage->Data);
             break;
         }
     }
@@ -67,9 +73,7 @@ void Device_CAN2_Callback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 
 void VT03_UART1_Callback(uint8_t *Buffer, uint16_t Length)
 {
-
     Commander.VT03.UART_RxCpltCallback(Buffer,Length);
-    Commander.MCU_Comm.MCU_Comm_Data.Start_Of_Frame       = 0xAB;
     Commander.MCU_Comm.MCU_Comm_Data.Yaw_Angle            = (uint8_t)((Commander.VT03.Data.Right_X 
                                                                         + Commander.VT03.Data.Mouse_X)*255);
     Commander.MCU_Comm.MCU_Comm_Data.Pitch_Angle          = (uint8_t)((Commander.VT03.Data.Right_Y 
