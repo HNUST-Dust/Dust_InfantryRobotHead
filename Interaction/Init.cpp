@@ -58,16 +58,13 @@ void Device_CAN2_Callback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 {
     switch (CAN_RxMessage->Header.Identifier)
     {
-        case (YAW_INFO_ID):
+        case (GIMBAL_INFO_ID):
         {
-            Commander.MCU_Comm.CAN_Yaw_RxCpltCallback(CAN_RxMessage->Data);
+            Commander.MCU_Comm.CAN_Gimbal_RxCpltCallback(CAN_RxMessage->Data);
             break;
         }
-        case (PITCH_INFO_ID):
-        {
-            Commander.MCU_Comm.CAN_Pitch_RxCpltCallback(CAN_RxMessage->Data);
+        default:
             break;
-        }
     }
 }
 

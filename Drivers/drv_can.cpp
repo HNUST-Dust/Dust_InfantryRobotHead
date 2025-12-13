@@ -131,6 +131,49 @@ uint8_t CAN_Send_Data(FDCAN_HandleTypeDef *hcan, uint16_t ID, uint8_t *Data, uin
     return HAL_FDCAN_AddMessageToTxFifoQ(hcan, &tx_header, Data);
 }
 
+uint8_t FDCAN_Send_Data(FDCAN_HandleTypeDef *hcan, uint16_t ID, uint8_t *Data, uint16_t Length) {
+    FDCAN_TxHeaderTypeDef tx_header;
+    uint32_t used_mailbox;
+
+    //检测传参是否正确
+    assert_param(hcan != NULL);
+
+    tx_header.Identifier            = ID;
+    tx_header.IdType                = FDCAN_STANDARD_ID;            // 标准ID
+    tx_header.TxFrameType           = FDCAN_DATA_FRAME;             // 数据帧
+    if(Length <= 8){
+        tx_header.DataLength        = Length;                       
+    }
+    if(Length == 12){
+        tx_header.DataLength        = FDCAN_DLC_BYTES_12;          
+    }
+    if(Length == 16){
+        tx_header.DataLength        = FDCAN_DLC_BYTES_16;          
+    }
+    if(Length == 20){
+        tx_header.DataLength        = FDCAN_DLC_BYTES_20;          
+    }
+    if(Length == 24){
+        tx_header.DataLength        = FDCAN_DLC_BYTES_24;          
+    }
+    if(Length == 32){
+        tx_header.DataLength        = FDCAN_DLC_BYTES_32;          
+    }
+    if(Length == 48){
+        tx_header.DataLength        = FDCAN_DLC_BYTES_48;          
+    }
+    if(Length == 64){
+        tx_header.DataLength        = FDCAN_DLC_BYTES_64;          
+    }
+    tx_header.ErrorStateIndicator   = FDCAN_ESI_ACTIVE;             // 错误指示，默认正常
+    tx_header.BitRateSwitch         = FDCAN_BRS_ON;                 // 启用比特率切换
+    tx_header.FDFormat              = FDCAN_FD_CAN;                 // FD CAN格式
+    tx_header.TxEventFifoControl    = FDCAN_NO_TX_EVENTS;           // 不启用事件FIFO
+    tx_header.MessageMarker         = 0;                            // 消息标记为0
+    UNUSED(used_mailbox); // 避免未使用变量警告
+    return HAL_FDCAN_AddMessageToTxFifoQ(hcan, &tx_header, Data);
+
+}
 /**
  * @brief CAN的TIM定时器中断发送回调函数
  *

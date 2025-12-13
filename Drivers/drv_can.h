@@ -44,7 +44,7 @@ extern "C"{
 struct Struct_CAN_Rx_Buffer
 {
     FDCAN_RxHeaderTypeDef Header;
-    uint8_t Data[8];
+    uint8_t Data[64];
 };
 
 /**
@@ -93,7 +93,7 @@ void CAN_Init(FDCAN_HandleTypeDef *hcan, CAN_Call_Back Callback_Function);
 void CAN_Filter_Mask_Config(FDCAN_HandleTypeDef *hcan, uint8_t Object_Para, uint32_t ID, uint32_t Mask_ID);
 
 uint8_t CAN_Send_Data(FDCAN_HandleTypeDef *hcan, uint16_t ID, uint8_t *Data, uint16_t Length);
-
+uint8_t FDCAN_Send_Data(FDCAN_HandleTypeDef *hcan, uint16_t ID, uint8_t *Data, uint16_t Length);
 void TIM_CAN_PeriodElapsedCallback();
 #ifdef __cplusplus
 }
