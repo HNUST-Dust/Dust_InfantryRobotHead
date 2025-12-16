@@ -25,6 +25,7 @@ float gyro_correct[3]={0};  //0飘初始值
 float RefTemp = 40;   //Destination
 float g_roll,g_pitch,g_yaw = 0;//欧拉角
 float g_pitch_vision;
+float g_yaw_vision;
 float g_pitch_rad, g_yaw_rad = 0;//弧度制欧拉角
 float g_total_yaw=0;
 float g_q[4] = {0,0,0,0};//四元数
@@ -100,6 +101,7 @@ void INS_Task(void)  //1khz
 			//ekf获取姿态角度函数
 			g_pitch = Get_Pitch(); //获得pitch,视觉上位机要求改成反方向的
 			g_pitch_vision = - g_pitch;
+			g_yaw_vision = - g_yaw;
 			g_roll = Get_Roll();//获得roll
 			g_yaw = Get_Yaw();//获得yaw
 			g_total_yaw=Get_YawTotal(); //获得总yaw角度

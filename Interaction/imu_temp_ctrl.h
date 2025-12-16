@@ -3,6 +3,7 @@
 
 extern float g_roll,g_pitch,g_yaw;//欧拉角
 extern float g_pitch_vision;
+extern float g_yaw_vision;
 extern float g_pitch_rad, g_yaw_rad;//弧度制欧拉角
 extern float g_total_yaw;
 extern float g_q[4];//四元数

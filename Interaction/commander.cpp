@@ -75,8 +75,8 @@ void Class_Commander::Task()
 
         // 将下板传回的数据发送给上位机
         PC_Comm.PC_Send_Data.mode = 1; // 自瞄模式
-        memcpy(&PC_Comm.PC_Send_Data.q,
-            &g_q,
+        memcpy(PC_Comm.PC_Send_Data.q,
+            g_q,
             4 * sizeof(float));
         memcpy(&PC_Comm.PC_Send_Data.yaw.yaw_ang, 
             &g_yaw, 
