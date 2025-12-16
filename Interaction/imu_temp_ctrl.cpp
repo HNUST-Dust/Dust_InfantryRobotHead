@@ -29,6 +29,7 @@ float g_yaw_vision;
 float g_pitch_rad, g_yaw_rad = 0;//弧度制欧拉角
 float g_total_yaw=0;
 float g_q[4] = {0,0,0,0};//四元数
+float g_q_vision[4] = {0,0,0,0};//给视觉的四元数
 uint8_t attitude_flag=1;
 uint32_t correct_times=0;
 
@@ -109,22 +110,48 @@ void INS_Task(void)  //1khz
 			g_pitch_rad = g_pitch * DEG_TO_RAD; //弧度制pitch,
 			g_yaw_rad = g_yaw * DEG_TO_RAD;     //弧度制yaw
 			Get_q(g_q); //获得四元数
+
+			// 重新根据欧拉角重构四元数，但将pitch取反，使得通过四元数解算出的pitch方向相反，yaw/roll保持不变
+		
+			float phi = g_roll * DEG_TO_RAD;    // roll (rad)
+			float theta = g_pitch_rad;          // pitch (rad)
+			float psi = g_yaw_rad;              // yaw (rad)
+			theta = -theta; // 取反pitch
+
+			float cy = cosf(psi * 0.5f);
+			float sy = sinf(psi * 0.5f);
+			float cp = cosf(theta * 0.5f);
+			float sp = sinf(theta * 0.5f);
+			float cr = cosf(phi * 0.5f);
+			float sr = sinf(phi * 0.5f);
+
+			// 四元数 (w, x, y, z) 对应 ZYX (yaw-pitch-roll) 顺序构造
+			float qw = cy * cp * cr + sy * sp * sr;
+			float qx = cy * cp * sr - sy * sp * cr;
+			float qy = cy * sp * cr + sy * cp * sr;
+			float qz = sy * cp * cr - cy * sp * sr;
+
+			g_q_vision[0] = qw;
+			g_q_vision[1] = qx;
+			g_q_vision[2] = qy;
+			g_q_vision[3] = qz;
+            
 			//==============================================================================
 		}
 		else if(attitude_flag==1)   //状态1 开始1000次的陀螺仪0飘初始化
 		{
-				//gyro correct
-				gyro_correct[0]+=	gyro[0];
-				gyro_correct[1]+=	gyro[1];
-				gyro_correct[2]+=	gyro[2];
-				correct_times++;
-				if(correct_times>=correct_Time_define)
-				{
-					gyro_correct[0]/=correct_Time_define;
-					gyro_correct[1]/=correct_Time_define;
-					gyro_correct[2]/=correct_Time_define;
-					attitude_flag=2; // go to 2 state
-				}
+			//gyro correct
+			gyro_correct[0]+=	gyro[0];
+			gyro_correct[1]+=	gyro[1];
+			gyro_correct[2]+=	gyro[2];
+			correct_times++;
+			if(correct_times>=correct_Time_define)
+			{
+				gyro_correct[0]/=correct_Time_define;
+				gyro_correct[1]/=correct_Time_define;
+				gyro_correct[2]/=correct_Time_define;
+				attitude_flag=2; // go to 2 state
+			}
 		}
     }
 
