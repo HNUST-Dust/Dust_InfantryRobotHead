@@ -79,13 +79,13 @@ void Class_Commander::Task()
             &g_q,
             4 * sizeof(float));
         memcpy(&PC_Comm.PC_Send_Data.yaw.yaw_ang, 
-            MCU_Comm.MCU_Recv_Data.Yaw_Angle, 
+            &g_yaw, 
             4);
         memcpy(&PC_Comm.PC_Send_Data.yaw.yaw_vel, 
             MCU_Comm.MCU_Recv_Data.Yaw_Omega, 
             4);
         memcpy(&PC_Comm.PC_Send_Data.pitch.pitch_ang, 
-            MCU_Comm.MCU_Recv_Data.Pitch_Angle, 
+            &g_pitch_vision, 
             4);
         memcpy(&PC_Comm.PC_Send_Data.pitch.pitch_vel, 
             MCU_Comm.MCU_Recv_Data.Pitch_Omega, 
@@ -114,7 +114,7 @@ void Class_Commander::Task()
         memcpy(MCU_Comm.MCU_AutoAim_Data.pitch_torque,
             &PC_Comm.PC_Recv_Data.pitch.pitch_acc,
             4 * sizeof(uint8_t));
-        //MCU_Comm.CAN_Send_AutoAim();
+        MCU_Comm.CAN_Send_AutoAim();
 
         // 将陀螺仪数据发送给下板
         MCU_Comm.CanSendImu();

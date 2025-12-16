@@ -9,20 +9,23 @@
 #include "imu_temp_ctrl.h"
 #include "pid.h"
 #include "MahonyAHRS.h"
+#include "alg_math.h"
 #define cheat TRUE  //作弊模式 去掉较小的gyro值
 #define correct_Time_define 1000    //上电去0飘 1000次取平均
 #define temp_times 300       //探测温度阈值
 
 pid_type_def Temperature_PID={0};
-float Temperature_PID_Para[3]={1600,50,40};
-float H723_Temperature=0.f;
+float Temperature_PID_Para[3] = {1600,50,40};
+float H723_Temperature = 0.f;
 unsigned int adc_v;
 float adcx;
 
 float gyro[3], accel[3], temp; //陀螺仪原始值
 float gyro_correct[3]={0};  //0飘初始值
 float RefTemp = 40;   //Destination
-float g_roll,g_pitch,g_yaw=0;//欧拉角
+float g_roll,g_pitch,g_yaw = 0;//欧拉角
+float g_pitch_vision;
+float g_pitch_rad, g_yaw_rad = 0;//弧度制欧拉角
 float g_total_yaw=0;
 float g_q[4] = {0,0,0,0};//四元数
 uint8_t attitude_flag=1;
@@ -95,10 +98,14 @@ void INS_Task(void)  //1khz
 			//HAL_GPIO_WritePin(GPIOE,GPIO_PIN_13,GPIO_PIN_RESET);
 			//=============================================================================
 			//ekf获取姿态角度函数
-			g_pitch = Get_Pitch(); //获得pitch
+			g_pitch = Get_Pitch(); //获得pitch,视觉上位机要求改成反方向的
+			g_pitch_vision = - g_pitch;
 			g_roll = Get_Roll();//获得roll
 			g_yaw = Get_Yaw();//获得yaw
 			g_total_yaw=Get_YawTotal(); //获得总yaw角度
+
+			g_pitch_rad = g_pitch * DEG_TO_RAD; //弧度制pitch,
+			g_yaw_rad = g_yaw * DEG_TO_RAD;     //弧度制yaw
 			Get_q(g_q); //获得四元数
 			//==============================================================================
 		}
