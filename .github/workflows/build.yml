@@ -1,0 +1,49 @@
+name: CI - Build
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BOARD: dm-h723
+      FIRMWARE: Dust_InfantryRobotHead
+    name: Build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build cmake gcc-arm-none-eabi libnewlib-arm-none-eabi binutils-arm-none-eabi
+       
+      - name: arm-none-eabi-gcc GNU Arm Embedded Toolchain
+        uses: carlosperate/arm-none-eabi-gcc-action@v1.11.1
+        
+      - name: Show toolchain versions
+        run: |
+          arm-none-eabi-gcc --version || true
+          ninja --version || true
+          cmake --version
+
+      - name: Configure CMake
+        run: |
+          BUILD_DIR="build"
+          rm -rf "${BUILD_DIR}"
+          cmake -S . -B "${BUILD_DIR}" -G Ninja
+
+      - name: Build
+        run: |
+          BUILD_DIR="build"
+          cmake --build "${BUILD_DIR}" -- -j$(nproc)
