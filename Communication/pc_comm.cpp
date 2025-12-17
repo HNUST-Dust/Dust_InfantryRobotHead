@@ -20,6 +20,6 @@ void Class_PC_Comm::RxCpltCallback()
 {
     if (PC_Recv_Data.head[0] == 'S' && PC_Recv_Data.head[1] == 'P'){
         g_recived_flag = 1;
-        memcpy(&PC_Recv_Data,&bsp_usb_rx_buffer,29 * sizeof(uint8_t));
+        memcpy(&PC_Recv_Data,bsp_usb_rx_buffer,29 * sizeof(uint8_t));
     }
 }
