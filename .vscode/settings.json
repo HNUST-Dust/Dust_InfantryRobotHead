@@ -16,5 +16,6 @@
         "freertos.h": "c",
         "stm32h7xx_hal.h": "c"
     },
-    "C_Cpp.default.compilerPath": "D:/arm-none-eabi-gcc/bin/arm-none-eabi-g++.exe"
+    "C_Cpp.default.compilerPath": "D:/arm-none-eabi-gcc/bin/arm-none-eabi-g++.exe",
+    "cortex-debug.variableUseNaturalFormat": false
 }
