@@ -534,6 +534,12 @@ void Get_q(float out[4])
     out[3] = QEKF_INS.q[3];
 }
 
+float Get_YawOmega()
+{
+    // 计算陀螺仪绕Z轴的角速度,单位rad/s
+    return(QEKF_INS.Gyro[2]);
+}
+
 // /**
 //  * @brief 自定义1/sqrt(x),速度更快
 //  *

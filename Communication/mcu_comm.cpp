@@ -77,7 +77,7 @@ void Class_MCU_Comm::CAN_Send_AutoAim()
 
 void Class_MCU_Comm::CanSendImu()
 {
-     static uint8_t can_tx_frame[8];
+     static uint8_t can_tx_frame[12];
      // 把float转换成字节
      union { float f; uint8_t b[4]; } conv;
      conv.f = g_total_yaw;
@@ -92,7 +92,13 @@ void Class_MCU_Comm::CanSendImu()
      can_tx_frame[6] = conv.b[2];
      can_tx_frame[7] = conv.b[3];
 
-     FDCAN_Send_Data(CAN_Manage_Object->CAN_Handler, IMU_INFO_ID, can_tx_frame, 8);
+     conv.f = g_yaw_omega;
+     can_tx_frame[8] = conv.b[0];
+     can_tx_frame[9] = conv.b[1];
+     can_tx_frame[10] = conv.b[2];
+     can_tx_frame[11] = conv.b[3];
+
+     FDCAN_Send_Data(CAN_Manage_Object->CAN_Handler, IMU_INFO_ID, can_tx_frame, 12);
 }
 void Class_MCU_Comm::Data_Process()
 {

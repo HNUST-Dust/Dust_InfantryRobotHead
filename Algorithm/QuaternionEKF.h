@@ -78,5 +78,6 @@ float Get_Pitch(void);//get pitch
 float Get_Roll(void);//get roll
 float Get_Yaw(void);//get yaw
 float Get_YawTotal(void);//get yaw total angle
+float Get_YawOmega(void);//get yaw angular velocity
 void Get_q(float out[4]);//get quaternion
 #endif
