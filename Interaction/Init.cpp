@@ -116,7 +116,6 @@ void VT03_UART1_Callback(uint8_t *Buffer, uint16_t Length)
         Commander.MCU_Comm.MCU_Comm_Data.Chassis_Speed_Y      = chassis_speed_y;
     }
 
-
     Commander.MCU_Comm.MCU_Comm_Data.Chassis_Rotation     = (uint8_t)(Commander.VT03.Data.Wheel*255);
 
     if((uint8_t)(Commander.VT03.Data.Mode_Switch) == 0 || Commander.VT03.Data.Keyboard_Key[4] == VT03_Key_Status_PRESSED){//shift

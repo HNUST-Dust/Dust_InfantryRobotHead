@@ -115,6 +115,13 @@ void Class_Commander::Task()
             &PC_Comm.PC_Recv_Data.pitch.pitch_acc,
             4 * sizeof(uint8_t));
         MCU_Comm.CAN_Send_AutoAim();
+        
+        // 自瞄火控
+        if (PC_Comm.PC_Recv_Data.mode == 2){
+            Booster.Set_AutoAIM_Fire_Statue(1);
+        }else{
+            Booster.Set_AutoAIM_Fire_Statue(0);
+        }
 
         // 将陀螺仪数据发送给下板
         MCU_Comm.CanSendImu();
