@@ -117,7 +117,9 @@ void Class_Commander::Task()
         MCU_Comm.CAN_Send_AutoAim();
         
         // 自瞄火控
-        if (PC_Comm.PC_Recv_Data.mode == 2){
+        if ((PC_Comm.PC_Recv_Data.mode == 2) 
+            && (VT03.Data.Mouse_Right_Key == 1))
+        {
             Booster.Set_AutoAIM_Fire_Statue(1);
         }else{
             Booster.Set_AutoAIM_Fire_Statue(0);

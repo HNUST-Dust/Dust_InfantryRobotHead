@@ -116,18 +116,29 @@ void VT03_UART1_Callback(uint8_t *Buffer, uint16_t Length)
         Commander.MCU_Comm.MCU_Comm_Data.Chassis_Speed_Y      = chassis_speed_y;
     }
 
-    Commander.MCU_Comm.MCU_Comm_Data.Chassis_Rotation     = (uint8_t)(Commander.VT03.Data.Wheel*255);
+    Commander.MCU_Comm.MCU_Comm_Data.Chassis_Rotation         = (uint8_t)(Commander.VT03.Data.Wheel*255);
 
-    if((uint8_t)(Commander.VT03.Data.Mode_Switch) == 0 || Commander.VT03.Data.Keyboard_Key[4] == VT03_Key_Status_PRESSED){//shift
+    if((uint8_t)(Commander.VT03.Data.Mode_Switch) == 0 
+        || Commander.VT03.Data.Keyboard_Key[4] == VT03_Key_Status_PRESSED)//shift
+    {
         Commander.MCU_Comm.MCU_Comm_Data.Chassis_Spin = 0; //顺时针转
     }else{
         Commander.MCU_Comm.MCU_Comm_Data.Chassis_Spin         = (uint8_t)(Commander.VT03.Data.Mode_Switch); //并允许遥控器命令进行覆盖
     }
 
-    if((uint8_t)(Commander.VT03.Data.Pause) == 1 || Commander.VT03.Data.Keyboard_Key[7] == VT03_Key_Status_PRESSED){//E键
+    if((uint8_t)(Commander.VT03.Data.Pause) == 1 
+        || Commander.VT03.Data.Keyboard_Key[7] == VT03_Key_Status_PRESSED)//E键
+    {
         Commander.MCU_Comm.MCU_Comm_Data.Supercap = 1; //放电
     }else{
         Commander.MCU_Comm.MCU_Comm_Data.Supercap = 0; //充电
+    }
+
+    if((uint8_t)(Commander.VT03.Data.Mouse_Right_Key) == 1)
+    {
+        Commander.MCU_Comm.MCU_Comm_Data.AutoAim = 1; //自瞄开启
+    }else {
+        Commander.MCU_Comm.MCU_Comm_Data.AutoAim = 0; //自瞄关闭
     }
 }
 
