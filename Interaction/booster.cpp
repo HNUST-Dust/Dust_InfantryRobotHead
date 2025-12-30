@@ -56,11 +56,11 @@ void Class_Booster::Task()
             && (reverse_switch == 0)
             && (start_switch == 1))
         {
-            Motor_Booster_3.Set_Target_Omega(18);//20
+            Motor_Booster_3.Set_Target_Omega(13.75);//20
         }else if ((shoot_switch == 0) && (auto_aim_fire_switch == 0) &&(reverse_switch == 0)){
             Motor_Booster_3.Set_Target_Omega(0);
         }else if ((shoot_switch == 0) && (auto_aim_fire_switch == 0) && (reverse_switch == 1)){
-            Motor_Booster_3.Set_Target_Omega(-18);
+            Motor_Booster_3.Set_Target_Omega(-13.75);
         }
 
         Motor_Booster_1.Calculate_PeriodElapsedCallback();
