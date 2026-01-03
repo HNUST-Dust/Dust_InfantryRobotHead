@@ -71,7 +71,7 @@ void Class_Commander::Task()
         }
 
         // 将遥控器数据发给下板
-        MCU_Comm.CAN_Send_Command();
+        MCU_Comm.CANSendCommandAndUI();
 
         // 将下板传回的数据发送给上位机
         PC_Comm.PC_Send_Data.mode = 1; // 自瞄模式

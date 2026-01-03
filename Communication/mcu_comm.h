@@ -86,7 +86,7 @@ public:
               );
 
     void CAN_Gimbal_RxCpltCallback(uint8_t *Rx_Data);
-    void CAN_Send_Command();
+    void CANSendCommandAndUI();
     void CAN_Send_AutoAim();
     void CanSendImu();
 

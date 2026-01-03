@@ -9,6 +9,7 @@ extern float g_total_yaw;
 extern float g_q[4];//四元数
 extern float g_q_vision[4];//给视觉的四元数
 extern float g_yaw_omega; //yaw角速度
+extern float g_pitch_omega; //pitch角速度
 
 void IMU_task();
 void INS_Init(void);

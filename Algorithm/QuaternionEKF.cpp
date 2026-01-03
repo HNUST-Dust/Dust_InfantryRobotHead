@@ -540,6 +540,12 @@ float Get_YawOmega()
     return(QEKF_INS.Gyro[2]);
 }
 
+float Get_PitchOmega()
+{
+    // 计算陀螺仪绕Y轴的角速度,单位rad/s
+    return(QEKF_INS.Gyro[1]);
+}
+
 // /**
 //  * @brief 自定义1/sqrt(x),速度更快
 //  *

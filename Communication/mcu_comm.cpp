@@ -24,7 +24,7 @@ void Class_MCU_Comm::Init(
      CAN_Tx_ID = __CAN_Tx_ID;
 }
 
-void Class_MCU_Comm::CAN_Send_Command()
+void Class_MCU_Comm::CANSendCommandAndUI()
 {
      static uint8_t CAN_Tx_Frame[8];
      CAN_Tx_Frame[0] = MCU_Comm_Data.Yaw_Angle;
@@ -41,7 +41,7 @@ void Class_MCU_Comm::CAN_Send_Command()
 
 void Class_MCU_Comm::CAN_Send_AutoAim()
 {
-     static uint8_t CAN_Tx_Frame[24];
+     static uint8_t CAN_Tx_Frame[8];
 
      // yaw and pitch angle
      CAN_Tx_Frame[0] = MCU_AutoAim_Data.yaw_angle[0];
@@ -53,32 +53,32 @@ void Class_MCU_Comm::CAN_Send_AutoAim()
      CAN_Tx_Frame[6] = MCU_AutoAim_Data.pitch_angle[2];
      CAN_Tx_Frame[7] = MCU_AutoAim_Data.pitch_angle[3];
 
-     //yaw and pitch omega
-     CAN_Tx_Frame[8] = MCU_AutoAim_Data.yaw_omega[0];
-     CAN_Tx_Frame[9] = MCU_AutoAim_Data.yaw_omega[1];
-     CAN_Tx_Frame[10] = MCU_AutoAim_Data.yaw_omega[2];
-     CAN_Tx_Frame[11] = MCU_AutoAim_Data.yaw_omega[3];
-     CAN_Tx_Frame[12] = MCU_AutoAim_Data.pitch_omega[0];
-     CAN_Tx_Frame[13] = MCU_AutoAim_Data.pitch_omega[1];
-     CAN_Tx_Frame[14] = MCU_AutoAim_Data.pitch_omega[2];
-     CAN_Tx_Frame[15] = MCU_AutoAim_Data.pitch_omega[3];
+     // //yaw and pitch omega
+     // CAN_Tx_Frame[8] = MCU_AutoAim_Data.yaw_omega[0];
+     // CAN_Tx_Frame[9] = MCU_AutoAim_Data.yaw_omega[1];
+     // CAN_Tx_Frame[10] = MCU_AutoAim_Data.yaw_omega[2];
+     // CAN_Tx_Frame[11] = MCU_AutoAim_Data.yaw_omega[3];
+     // CAN_Tx_Frame[12] = MCU_AutoAim_Data.pitch_omega[0];
+     // CAN_Tx_Frame[13] = MCU_AutoAim_Data.pitch_omega[1];
+     // CAN_Tx_Frame[14] = MCU_AutoAim_Data.pitch_omega[2];
+     // CAN_Tx_Frame[15] = MCU_AutoAim_Data.pitch_omega[3];
 
-     // yaw and pitch torque
-     CAN_Tx_Frame[16] = MCU_AutoAim_Data.yaw_torque[0];
-     CAN_Tx_Frame[17] = MCU_AutoAim_Data.yaw_torque[1];
-     CAN_Tx_Frame[18] = MCU_AutoAim_Data.yaw_torque[2];
-     CAN_Tx_Frame[19] = MCU_AutoAim_Data.yaw_torque[3];
-     CAN_Tx_Frame[20] = MCU_AutoAim_Data.pitch_torque[0];
-     CAN_Tx_Frame[21] = MCU_AutoAim_Data.pitch_torque[1];
-     CAN_Tx_Frame[22] = MCU_AutoAim_Data.pitch_torque[2];
-     CAN_Tx_Frame[23] = MCU_AutoAim_Data.pitch_torque[3];
+     // // yaw and pitch torque
+     // CAN_Tx_Frame[16] = MCU_AutoAim_Data.yaw_torque[0];
+     // CAN_Tx_Frame[17] = MCU_AutoAim_Data.yaw_torque[1];
+     // CAN_Tx_Frame[18] = MCU_AutoAim_Data.yaw_torque[2];
+     // CAN_Tx_Frame[19] = MCU_AutoAim_Data.yaw_torque[3];
+     // CAN_Tx_Frame[20] = MCU_AutoAim_Data.pitch_torque[0];
+     // CAN_Tx_Frame[21] = MCU_AutoAim_Data.pitch_torque[1];
+     // CAN_Tx_Frame[22] = MCU_AutoAim_Data.pitch_torque[2];
+     // CAN_Tx_Frame[23] = MCU_AutoAim_Data.pitch_torque[3];
 
-     FDCAN_Send_Data(CAN_Manage_Object->CAN_Handler, AUTOAIM_INFO_ID, CAN_Tx_Frame, 24);
+     FDCAN_Send_Data(CAN_Manage_Object->CAN_Handler, AUTOAIM_INFO_ID, CAN_Tx_Frame, 8);
 }
 
 void Class_MCU_Comm::CanSendImu()
 {
-     static uint8_t can_tx_frame[12];
+     static uint8_t can_tx_frame[16];
      // 把float转换成字节
      union { float f; uint8_t b[4]; } conv;
      conv.f = g_total_yaw;
@@ -99,7 +99,13 @@ void Class_MCU_Comm::CanSendImu()
      can_tx_frame[10] = conv.b[2];
      can_tx_frame[11] = conv.b[3];
 
-     FDCAN_Send_Data(CAN_Manage_Object->CAN_Handler, IMU_INFO_ID, can_tx_frame, 12);
+     conv.f = g_pitch_omega;
+     can_tx_frame[12] = conv.b[0];
+     can_tx_frame[13] = conv.b[1];
+     can_tx_frame[14] = conv.b[2];
+     can_tx_frame[15] = conv.b[3];
+
+     FDCAN_Send_Data(CAN_Manage_Object->CAN_Handler, IMU_INFO_ID, can_tx_frame, 16);
 }
 void Class_MCU_Comm::Data_Process()
 {

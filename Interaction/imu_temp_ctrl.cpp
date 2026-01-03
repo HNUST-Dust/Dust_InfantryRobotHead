@@ -26,7 +26,7 @@ float RefTemp = 40;   //Destination
 float g_roll,g_pitch,g_yaw = 0;//欧拉角
 float g_pitch_vision;
 float g_yaw_vision;
-float g_yaw_omega; //yaw角速度
+float g_yaw_omega, g_pitch_omega; // 角速度
 float g_pitch_rad, g_yaw_rad = 0;//弧度制欧拉角
 float g_total_yaw=0;
 float g_q[4] = {0,0,0,0};//四元数
@@ -108,6 +108,7 @@ void INS_Task(void)  //1khz
 			g_yaw = Get_Yaw();//获得yaw
 			g_total_yaw=Get_YawTotal(); //获得总yaw角度
 			g_yaw_omega = Get_YawOmega(); //获得yaw角速度
+			g_pitch_omega = Get_PitchOmega(); //获得pitch角速度
 			g_pitch_rad = g_pitch * DEG_TO_RAD; //弧度制pitch,
 			g_yaw_rad = g_yaw * DEG_TO_RAD;     //弧度制yaw
 			Get_q(g_q); //获得四元数

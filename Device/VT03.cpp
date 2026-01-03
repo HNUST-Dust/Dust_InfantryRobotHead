@@ -4,7 +4,7 @@
 
 /* Private macros ------------------------------------------------------------*/
 #define MOUSE_SENSITIVITY_X (30.0f)
-#define MOUSE_SENSITIVITY_Y (-2.0f)
+#define MOUSE_SENSITIVITY_Y (-8.0f)
 /* Private types -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
