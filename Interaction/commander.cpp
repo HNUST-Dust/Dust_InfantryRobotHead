@@ -120,9 +120,9 @@ void Class_Commander::Task()
         if ((PC_Comm.PC_Recv_Data.mode == 2) 
             && (VT03.Data.Mouse_Right_Key == 1))
         {
-            Booster.Set_AutoAIM_Fire_Statue(1);
+            Booster.Set_AutoAim_Fire_Statue(1);
         }else{
-            Booster.Set_AutoAIM_Fire_Statue(0);
+            Booster.Set_AutoAim_Fire_Statue(0);
         }
 
         // 将陀螺仪数据发送给下板

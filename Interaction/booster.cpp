@@ -12,7 +12,7 @@ void Class_Booster::Init()
     // 3508电机初始化
     Motor_Booster_1.PID_Omega.Init(1.0f,0.0f,0.0f);
     Motor_Booster_2.PID_Omega.Init(1.0f,0.0f,0.0f);
-    Motor_Booster_3.PID_Omega.Init(1.0f,0.0f,0.0f);
+    Motor_Booster_3.PID_Omega.Init(10.0f,2.0f,0.0f);
 
     Motor_Booster_1.Init(&hfdcan1, Motor_DJI_ID_0x202, Motor_DJI_Control_Method_OMEGA); // 202为右摩擦轮
     Motor_Booster_2.Init(&hfdcan1, Motor_DJI_ID_0x203, Motor_DJI_Control_Method_OMEGA); // 203为左摩擦轮
@@ -41,26 +41,35 @@ void Class_Booster::TaskEntry(void *argument)
 // 实际任务逻辑
 void Class_Booster::Task()
 {
-    for (;;)
-    {
+    for (;;) {
         if (start_switch == 1){
-            Motor_Booster_1.Set_Target_Omega(40); //40
-            Motor_Booster_2.Set_Target_Omega(-40);
+            Motor_Booster_1.Set_Target_Omega(45); //40
+            Motor_Booster_2.Set_Target_Omega(-45);
         }else if(start_switch == 0){
             Motor_Booster_1.Set_Target_Omega(0);
             Motor_Booster_2.Set_Target_Omega(0);
         }
 
         // 没穷举出所有情况
-        if (((shoot_switch == 1) || (auto_aim_fire_switch == 1)) 
-            && (reverse_switch == 0)
-            && (start_switch == 1))
-        {
-            Motor_Booster_3.Set_Target_Omega(13.75);//20
-        }else if ((shoot_switch == 0) && (auto_aim_fire_switch == 0) &&(reverse_switch == 0)){
+
+        // 开火逻辑
+        if ((shoot_switch == 1) 
+        && (reverse_switch == 0)
+        ) {
+            if (((auto_aim_flag == 1)
+            && (auto_aim_fire_switch == 1))
+            || (auto_aim_flag == 0)
+            ) {
+                Motor_Booster_3.Set_Target_Omega(5.0);//20
+            } 
+        }
+        // 停止逻辑
+        if ((shoot_switch == 0) && (reverse_switch == 0)){
             Motor_Booster_3.Set_Target_Omega(0);
-        }else if ((shoot_switch == 0) && (auto_aim_fire_switch == 0) && (reverse_switch == 1)){
-            Motor_Booster_3.Set_Target_Omega(-13.75);
+        }
+        // 退弹逻辑
+        if ((shoot_switch == 0) && (reverse_switch == 1)){
+            Motor_Booster_3.Set_Target_Omega(-5.0);
         }
 
         Motor_Booster_1.Calculate_PeriodElapsedCallback();

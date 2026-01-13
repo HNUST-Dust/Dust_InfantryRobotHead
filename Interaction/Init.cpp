@@ -137,8 +137,11 @@ void VT03_UART1_Callback(uint8_t *Buffer, uint16_t Length)
     if((uint8_t)(Commander.VT03.Data.Mouse_Right_Key) == 1)
     {
         Commander.MCU_Comm.MCU_Comm_Data.AutoAim = 1; //自瞄开启
+        Commander.Booster.Set_AutoAim_Fire_Statue(1);
     }else {
         Commander.MCU_Comm.MCU_Comm_Data.AutoAim = 0; //自瞄关闭
+        Commander.Booster.Set_AutoAim_Fire_Statue(0);
+
     }
 }
 
