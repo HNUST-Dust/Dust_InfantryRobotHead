@@ -26,7 +26,7 @@ void Class_MCU_Comm::Init(
 
 void Class_MCU_Comm::CANSendCommandAndUI()
 {
-     static uint8_t CAN_Tx_Frame[8];
+     static uint8_t CAN_Tx_Frame[8]; 
      CAN_Tx_Frame[0] = MCU_Comm_Data.Yaw_Angle;
      CAN_Tx_Frame[1] = MCU_Comm_Data.Pitch_Angle;
      CAN_Tx_Frame[2] = MCU_Comm_Data.Chassis_Speed_X;
