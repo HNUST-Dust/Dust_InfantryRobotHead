@@ -26,7 +26,7 @@ void Class_MCU_Comm::Init(
 
 void Class_MCU_Comm::CANSendCommandAndUI()
 {
-     static uint8_t CAN_Tx_Frame[8]; 
+     static uint8_t CAN_Tx_Frame[12]; 
      CAN_Tx_Frame[0] = MCU_Comm_Data.Yaw_Angle;
      CAN_Tx_Frame[1] = MCU_Comm_Data.Pitch_Angle;
      CAN_Tx_Frame[2] = MCU_Comm_Data.Chassis_Speed_X;
@@ -35,8 +35,9 @@ void Class_MCU_Comm::CANSendCommandAndUI()
      CAN_Tx_Frame[5] = MCU_Comm_Data.Chassis_Spin;
      CAN_Tx_Frame[6] = MCU_Comm_Data.Supercap;
      CAN_Tx_Frame[7] = MCU_Comm_Data.AutoAim;
-
-     FDCAN_Send_Data(CAN_Manage_Object->CAN_Handler, REMOTE_CONTRL_ID, CAN_Tx_Frame, 8);
+     CAN_Tx_Frame[8] = MCU_Comm_Data.Gimbal_SetZero;
+     
+     FDCAN_Send_Data(CAN_Manage_Object->CAN_Handler, REMOTE_CONTRL_ID, CAN_Tx_Frame, 12);
 }
 
 void Class_MCU_Comm::CAN_Send_AutoAim()

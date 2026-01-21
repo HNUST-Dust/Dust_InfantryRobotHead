@@ -92,7 +92,7 @@ void VT02::RxCpltCallback(uint8_t *rx_data, uint16_t length)
     
         // 鼠标处理
         recived_processed_data_.mouse.x = recived_raw_data_.mouse.x / 32767.0f * 1.0f;
-        recived_processed_data_.mouse.y -= recived_raw_data_.mouse.y / 32767.0f * 0.2f;
+        recived_processed_data_.mouse.y += recived_raw_data_.mouse.y / 32767.0f * 0.8f;
         recived_processed_data_.mouse.z = recived_raw_data_.mouse.z / 32767.0f;
         // 鼠标限制
         if(recived_processed_data_.mouse.y > 1.0f){
@@ -112,9 +112,11 @@ void VT02::RxCpltCallback(uint8_t *rx_data, uint16_t length)
         recived_processed_data_.keyboard[VT02_KEY_E].current_status = recived_raw_data_.keyboard.bit.E;
         recived_processed_data_.keyboard[VT02_KEY_F].current_status = recived_raw_data_.keyboard.bit.F;
         recived_processed_data_.keyboard[VT02_KEY_SHIFT].current_status = recived_raw_data_.keyboard.bit.SHIFT;
+        recived_processed_data_.keyboard[VT02_KEY_B].current_status = recived_raw_data_.keyboard.bit.B;
 
         judge_key(&recived_processed_data_.keyboard[VT02_KEY_F], recived_raw_data_.keyboard.bit.F, pre_recived_raw_data_.keyboard.bit.F);
-        
+        judge_key(&recived_processed_data_.keyboard[VT02_KEY_B], recived_raw_data_.keyboard.bit.B, pre_recived_raw_data_.keyboard.bit.B);
+
         memcpy(&pre_recived_raw_data_, &recived_raw_data_, sizeof(RecivedRawData));
     }
 }

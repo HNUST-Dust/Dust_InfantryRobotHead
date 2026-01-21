@@ -14,6 +14,7 @@ struct Struct_MCU_Comm_Data
     uint8_t Chassis_Spin;       // 小陀螺：不转、顺时针转、逆时针转
     uint8_t Supercap;           // 超级电容：充电、放电
     uint8_t AutoAim;            // 自瞄开关
+    uint8_t Gimbal_SetZero;     // 云台归零
 };
 constexpr uint8_t REMOTE_CONTRL_ID = 0xAB;
 
@@ -56,6 +57,7 @@ public:
         127,
         1,
         1,
+        0,
         0,
     };
 

@@ -60,7 +60,7 @@ void Class_Booster::Task()
             && (auto_aim_fire_switch == 1))
             || (auto_aim_flag == 0)
             ) {
-                Motor_Booster_3.Set_Target_Omega(5.0);//20
+                Motor_Booster_3.Set_Target_Omega(8.0);//20
             } 
         }
         // 停止逻辑

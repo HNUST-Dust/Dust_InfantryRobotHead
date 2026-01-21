@@ -135,6 +135,15 @@ void Commander::publish_control_info()
             Booster.Set_Switch_Statue(1);
         }
     }
+
+    // 云台归零逻辑
+    if (vt02_.GetData()->keyboard[VT02_KEY_B].key_status == VT02::TRIG_PRESSED_FREE){ //B
+        // ★ 消费事件，防止重复触发
+        vt02_.GetData()->keyboard[VT02_KEY_B].key_status
+            = VT02::FREE;
+        MCU_Comm.MCU_Comm_Data.Gimbal_SetZero = 1;
+    }
+
     //拨弹盘逻辑
     if (vt02_.GetData()->keyboard[VT02_KEY_R].current_status == VT02::PRESSED){
         Booster.Set_Reverse_Statue(1);
@@ -219,6 +228,11 @@ void Commander::publish_control_info()
 #endif
     // 将遥控器数据发给下板
     MCU_Comm.CANSendCommandAndUI();
+    if(MCU_Comm.MCU_Comm_Data.Gimbal_SetZero == 1)
+    {
+        // 发送完成后归零
+        MCU_Comm.MCU_Comm_Data.Gimbal_SetZero = 0;
+    }
 }
 
 void Commander::transfer_info_to_pc()
