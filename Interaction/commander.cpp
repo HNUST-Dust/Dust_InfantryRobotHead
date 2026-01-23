@@ -80,7 +80,7 @@ void Commander::control_data_process()
     }
 #endif
     // --- 缓启动逼近 ---
-    float accel = 5.0f;
+    float accel = 1.0f;
     if (chassis_speed_x < target_speed_x)
         chassis_speed_x = fminf(chassis_speed_x + accel, target_speed_x);
     else if (chassis_speed_x > target_speed_x)
