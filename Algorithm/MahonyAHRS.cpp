@@ -1,323 +1,291 @@
-
-// Date			Author			Notes
-// 29/09/2011	SOH Madgwick    Initial release
-// 02/10/2011	SOH Madgwick	Optimised for reduced CPU load
-//����a�� 2023/3/27 ħ��
-//-------------------------------------------------------------------------------------------
-// Header files
-#define ARM_MATH_CM7
 #include "MahonyAHRS.h"
 
+#include <cmath>
+#include <cstdint>
+#include <cstring>
 
-// #include "dsp/fast_math_functions.h"    
-#include "arm_math.h"
-#include "math.h"
-//-------------------------------------------------------------------------------------------
-// Definitions
-//���ﶼ�ǿ��Ե����Ĳ���
-//---------------------------------------***********************************
-float twoKi;		// 2 * integral gain (Ki)
-float q0, q1, q2, q3;	// quaternion of sensor frame relative to auxiliary frame
-float integralFBx, integralFBy, integralFBz;  // integral error terms scaled by Ki
-float invSampleFreq;
-float roll_mahony, pitch_mahony, yaw_mahony;
-char anglesComputed;
-//*-*-*-**-----------------------------------------------------------------------------
-// static float invSqrt(float x)  // if use other platform please use float Mahony_invSqrt(float x)
-// {
-// 	volatile float tmp = 1.0f;
-// 	tmp /= sqrtf(x);
-// 	return tmp;
-// }
+namespace alg {
 
-
-#define twoKpDef	(2.0f * 0.5f)	// 2 * proportional gain
-#define twoKiDef	(2.0f * 0.0f)	// 2 * integral gain
-void Mahony_Init(float sampleFrequency)
+void MahonyAhrs::Init(float sampleFrequencyHz)
 {
-	twoKi = twoKiDef;	// 2 * integral gain (Ki)
-	q0 = 1.0f;
-	q1 = 0.0f;
-	q2 = 0.0f;
-	q3 = 0.0f;
-	integralFBx = 0.0f;
-	integralFBy = 0.0f;
-	integralFBz = 0.0f;
-	anglesComputed = 0;
-	invSampleFreq = 1.0f / sampleFrequency;
+	two_ki_ = kTwoKiDefault;
+	q0_ = 1.0f;
+	q1_ = 0.0f;
+	q2_ = 0.0f;
+	q3_ = 0.0f;
+	integral_fbx_ = 0.0f;
+	integral_fby_ = 0.0f;
+	integral_fbz_ = 0.0f;
+	angles_computed_ = false;
+	inv_sample_freq_ = 1.0f / sampleFrequencyHz;
 }
 
-
-
-float Mahony_invSqrt(float x)
+float MahonyAhrs::InvSqrt(float x)
 {
-	float halfx = 0.5f * x;
+	float half_x = 0.5f * x;
 	float y = x;
-	long i = *(long*)&y;
-	i = 0x5f3759df - (i>>1);
-	y = *(float*)&i;
-	y = y * (1.5f - (halfx * y * y));
-	y = y * (1.5f - (halfx * y * y));
+
+	static_assert(sizeof(float) == sizeof(std::uint32_t));
+	std::uint32_t i = 0;
+	std::memcpy(&i, &y, sizeof(i));
+	i = 0x5f3759dfU - (i >> 1);
+	std::memcpy(&y, &i, sizeof(y));
+
+	y = y * (1.5f - (half_x * y * y));
+	y = y * (1.5f - (half_x * y * y));
 	return y;
 }
 
-void MahonyAHRSinit(float ax, float ay, float az, float mx, float my, float mz)
+void MahonyAhrs::InitFromAccMag(float ax, float ay, float az, float mx, float my, float mz)
 {
-    float recipNorm;
-    float init_yaw, init_pitch, init_roll;
-    float cr2, cp2, cy2, sr2, sp2, sy2;
-    float sin_roll, cos_roll, sin_pitch, cos_pitch;
-    float magX, magY;
+	float recip_norm;
+	float init_yaw, init_pitch, init_roll;
+	float cr2, cp2, cy2, sr2, sp2, sy2;
+	float sin_roll, cos_roll, sin_pitch, cos_pitch;
+	float mag_x, mag_y;
 
-    recipNorm = Mahony_invSqrt(ax * ax + ay * ay + az * az);
-    ax *= recipNorm;
-    ay *= recipNorm;
-    az *= recipNorm;
+	recip_norm = InvSqrt(ax * ax + ay * ay + az * az);
+	ax *= recip_norm;
+	ay *= recip_norm;
+	az *= recip_norm;
 
-    if((mx != 0.0f) && (my != 0.0f) && (mz != 0.0f)) 
-    {
-	    recipNorm = Mahony_invSqrt(mx * mx + my * my + mz * mz);
-	    mx *= recipNorm;
-	    my *= recipNorm;
-	    mz *= recipNorm;
+	if ((mx != 0.0f) && (my != 0.0f) && (mz != 0.0f))
+	{
+		recip_norm = InvSqrt(mx * mx + my * my + mz * mz);
+		mx *= recip_norm;
+		my *= recip_norm;
+		mz *= recip_norm;
 	}
 
-    init_pitch = atan2f(-ax, az);
-    init_roll = atan2f(ay, az);
+	init_pitch = std::atan2(-ax, az);
+	init_roll = std::atan2(ay, az);
 
-    sin_roll  = sinf(init_roll);
-    cos_roll  = cosf(init_roll);
-    cos_pitch = cosf(init_pitch);
-    sin_pitch = sinf(init_pitch);
+	    sin_roll = std::sin(init_roll);
+	    cos_roll = std::cos(init_roll);
+	    cos_pitch = std::cos(init_pitch);
+	    sin_pitch = std::sin(init_pitch);
 
-    if((mx != 0.0f) && (my != 0.0f) && (mz != 0.0f))
-    {
-    	magX = mx * cos_pitch + my * sin_pitch * sin_roll + mz * sin_pitch * cos_roll;
-    	magY = my * cos_roll - mz * sin_roll;
-    	init_yaw  = atan2f(-magY, magX);
-    }
-    else
-    {
-    	init_yaw=0.0f;
-    }
+	if ((mx != 0.0f) && (my != 0.0f) && (mz != 0.0f))
+	{
+		mag_x = mx * cos_pitch + my * sin_pitch * sin_roll + mz * sin_pitch * cos_roll;
+		mag_y = my * cos_roll - mz * sin_roll;
+		init_yaw = std::atan2(-mag_y, mag_x);
+	}
+	else
+	{
+		init_yaw = 0.0f;
+	}
 
-    cr2 = cosf(init_roll * 0.5f);
-    cp2 = cosf(init_pitch * 0.5f);
-    cy2 = cosf(init_yaw * 0.5f);
-    sr2 = sinf(init_roll * 0.5f);
-    sp2 = sinf(init_pitch * 0.5f);
-    sy2 = sinf(init_yaw * 0.5f);
+	cr2 = std::cos(init_roll * 0.5f);
+	cp2 = std::cos(init_pitch * 0.5f);
+	cy2 = std::cos(init_yaw * 0.5f);
+	sr2 = std::sin(init_roll * 0.5f);
+	sp2 = std::sin(init_pitch * 0.5f);
+	sy2 = std::sin(init_yaw * 0.5f);
 
-    q0 = cr2 * cp2 * cy2 + sr2 * sp2 * sy2;
-    q1= sr2 * cp2 * cy2 - cr2 * sp2 * sy2;
-    q2 = cr2 * sp2 * cy2 + sr2 * cp2 * sy2;
-    q3= cr2 * cp2 * sy2 - sr2 * sp2 * cy2;
+	q0_ = cr2 * cp2 * cy2 + sr2 * sp2 * sy2;
+	q1_ = sr2 * cp2 * cy2 - cr2 * sp2 * sy2;
+	q2_ = cr2 * sp2 * cy2 + sr2 * cp2 * sy2;
+	q3_ = cr2 * cp2 * sy2 - sr2 * sp2 * cy2;
 
-    // Normalise quaternion
-    recipNorm = Mahony_invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-    q0 *= recipNorm;
-    q1 *= recipNorm;
-    q2 *= recipNorm;
-    q3 *= recipNorm;
+	recip_norm = InvSqrt(q0_ * q0_ + q1_ * q1_ + q2_ * q2_ + q3_ * q3_);
+	q0_ *= recip_norm;
+	q1_ *= recip_norm;
+	q2_ *= recip_norm;
+	q3_ *= recip_norm;
+
+	angles_computed_ = false;
 }
-void Mahony_update(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz)
+
+void MahonyAhrs::Update(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz)
 {
-	float recipNorm;
-	float q0q0, q0q1, q0q2, q0q3, q1q1, q1q2, q1q3, q2q2, q2q3, q3q3;
-	float hx, hy, bx, bz;
-	float halfvx, halfvy, halfvz, halfwx, halfwy, halfwz;
-	float halfex, halfey, halfez;
-	float qa, qb, qc;
-	// Convert gyroscope degrees/sec to radians/sec
-//	gx *= 0.0174533f;
-//	gy *= 0.0174533f;
-//	gz *= 0.0174533f;
+	float recip_norm;
+	float q0_q0, q0_q1, q0_q2, q0_q3, q1_q1, q1_q2, q1_q3, q2_q2, q2_q3, q3_q3;
+	float h_x, h_y, b_x, b_z;
+	float half_vx, half_vy, half_vz, half_wx, half_wy, half_wz;
+	float half_ex, half_ey, half_ez;
+	float q_a, q_b, q_c;
 
-    // Use IMU algorithm if magnetometer measurement invalid (avoids NaN in magnetometer normalisation)
-    if((mx == 0.0f) && (my == 0.0f) && (mz == 0.0f)) {
-        MahonyAHRSupdateIMU(gx, gy, gz, ax, ay, az);
-        return;
-    }
+	if ((mx == 0.0f) && (my == 0.0f) && (mz == 0.0f))
+	{
+		UpdateImu(gx, gy, gz, ax, ay, az);
+		return;
+	}
 
-	// Compute feedback only if accelerometer measurement valid
-	// (avoids NaN in accelerometer normalisation)
-	if(!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) {
+	if (!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f)))
+	{
+		recip_norm = InvSqrt(ax * ax + ay * ay + az * az);
+		ax *= recip_norm;
+		ay *= recip_norm;
+		az *= recip_norm;
 
-		// Normalise accelerometer measurement
-		recipNorm = Mahony_invSqrt(ax * ax + ay * ay + az * az);
-		ax *= recipNorm;
-		ay *= recipNorm;
-		az *= recipNorm;
+		recip_norm = InvSqrt(mx * mx + my * my + mz * mz);
+		mx *= recip_norm;
+		my *= recip_norm;
+		mz *= recip_norm;
 
-		// Normalise magnetometer measurement
-		recipNorm = Mahony_invSqrt(mx * mx + my * my + mz * mz);
-		mx *= recipNorm;
-		my *= recipNorm;
-		mz *= recipNorm;
+		q0_q0 = q0_ * q0_;
+		q0_q1 = q0_ * q1_;
+		q0_q2 = q0_ * q2_;
+		q0_q3 = q0_ * q3_;
+		q1_q1 = q1_ * q1_;
+		q1_q2 = q1_ * q2_;
+		q1_q3 = q1_ * q3_;
+		q2_q2 = q2_ * q2_;
+		q2_q3 = q2_ * q3_;
+		q3_q3 = q3_ * q3_;
 
-		// Auxiliary variables to avoid repeated arithmetic
-		q0q0 = q0 * q0;
-		q0q1 = q0 * q1;
-		q0q2 = q0 * q2;
-		q0q3 = q0 * q3;
-		q1q1 = q1 * q1;
-		q1q2 = q1 * q2;
-		q1q3 = q1 * q3;
-		q2q2 = q2 * q2;
-		q2q3 = q2 * q3;
-		q3q3 = q3 * q3;
+		h_x = 2.0f * (mx * (0.5f - q2_q2 - q3_q3) + my * (q1_q2 - q0_q3) + mz * (q1_q3 + q0_q2));
+		h_y = 2.0f * (mx * (q1_q2 + q0_q3) + my * (0.5f - q1_q1 - q3_q3) + mz * (q2_q3 - q0_q1));
+		b_x = std::sqrt(h_x * h_x + h_y * h_y);
+		b_z = 2.0f * (mx * (q1_q3 - q0_q2) + my * (q2_q3 + q0_q1) + mz * (0.5f - q1_q1 - q2_q2));
 
-		// Reference direction of Earth's magnetic field
-		hx = 2.0f * (mx * (0.5f - q2q2 - q3q3) + my * (q1q2 - q0q3) + mz * (q1q3 + q0q2));
-		hy = 2.0f * (mx * (q1q2 + q0q3) + my * (0.5f - q1q1 - q3q3) + mz * (q2q3 - q0q1));
-		bx = sqrtf(hx * hx + hy * hy);
-		bz = 2.0f * (mx * (q1q3 - q0q2) + my * (q2q3 + q0q1) + mz * (0.5f - q1q1 - q2q2));
+		half_vx = q1_q3 - q0_q2;
+		half_vy = q0_q1 + q2_q3;
+		half_vz = q0_q0 - 0.5f + q3_q3;
+		half_wx = b_x * (0.5f - q2_q2 - q3_q3) + b_z * (q1_q3 - q0_q2);
+		half_wy = b_x * (q1_q2 - q0_q3) + b_z * (q0_q1 + q2_q3);
+		half_wz = b_x * (q0_q2 + q1_q3) + b_z * (0.5f - q1_q1 - q2_q2);
 
-		// Estimated direction of gravity and magnetic field
-		halfvx = q1q3 - q0q2;
-		halfvy = q0q1 + q2q3;
-		halfvz = q0q0 - 0.5f + q3q3;
-		halfwx = bx * (0.5f - q2q2 - q3q3) + bz * (q1q3 - q0q2);
-		halfwy = bx * (q1q2 - q0q3) + bz * (q0q1 + q2q3);
-		halfwz = bx * (q0q2 + q1q3) + bz * (0.5f - q1q1 - q2q2);
+		half_ex = (ay * half_vz - az * half_vy) + (my * half_wz - mz * half_wy);
+		half_ey = (az * half_vx - ax * half_vz) + (mz * half_wx - mx * half_wz);
+		half_ez = (ax * half_vy - ay * half_vx) + (mx * half_wy - my * half_wx);
 
-		// Error is sum of cross product between estimated direction
-		// and measured direction of field vectors
-		halfex = (ay * halfvz - az * halfvy) + (my * halfwz - mz * halfwy);
-		halfey = (az * halfvx - ax * halfvz) + (mz * halfwx - mx * halfwz);
-		halfez = (ax * halfvy - ay * halfvx) + (mx * halfwy - my * halfwx);
-
-		// Compute and apply integral feedback if enabled
-		if(twoKi > 0.0f) {
-			// integral error scaled by Ki
-			integralFBx += twoKi * halfex * invSampleFreq;
-			integralFBy += twoKi * halfey * invSampleFreq;
-			integralFBz += twoKi * halfez * invSampleFreq;
-			gx += integralFBx;	// apply integral feedback
-			gy += integralFBy;
-			gz += integralFBz;
-		} else {
-			integralFBx = 0.0f;	// prevent integral windup
-			integralFBy = 0.0f;
-			integralFBz = 0.0f;
+		if (two_ki_ > 0.0f)
+		{
+			integral_fbx_ += two_ki_ * half_ex * inv_sample_freq_;
+			integral_fby_ += two_ki_ * half_ey * inv_sample_freq_;
+			integral_fbz_ += two_ki_ * half_ez * inv_sample_freq_;
+			gx += integral_fbx_;
+			gy += integral_fby_;
+			gz += integral_fbz_;
+		}
+		else
+		{
+			integral_fbx_ = 0.0f;
+			integral_fby_ = 0.0f;
+			integral_fbz_ = 0.0f;
 		}
 
-		// Apply proportional feedback
-		gx += twoKpDef * halfex;
-		gy += twoKpDef * halfey;
-		gz += twoKpDef * halfez;
+		gx += kTwoKp * half_ex;
+		gy += kTwoKp * half_ey;
+		gz += kTwoKp * half_ez;
 	}
 
-	// Integrate rate of change of quaternion
-	gx *= (0.5f * invSampleFreq);		// pre-multiply common factors
-	gy *= (0.5f * invSampleFreq);
-	gz *= (0.5f * invSampleFreq);
-	qa = q0;
-	qb = q1;
-	qc = q2;
-	q0 += (-qb * gx - qc * gy - q3 * gz);
-	q1 += (qa * gx + qc * gz - q3 * gy);
-	q2 += (qa * gy - qb * gz + q3 * gx);
-	q3 += (qa * gz + qb * gy - qc * gx);
+	gx *= (0.5f * inv_sample_freq_);
+	gy *= (0.5f * inv_sample_freq_);
+	gz *= (0.5f * inv_sample_freq_);
+	q_a = q0_;
+	q_b = q1_;
+	q_c = q2_;
+	q0_ += (-q_b * gx - q_c * gy - q3_ * gz);
+	q1_ += (q_a * gx + q_c * gz - q3_ * gy);
+	q2_ += (q_a * gy - q_b * gz + q3_ * gx);
+	q3_ += (q_a * gz + q_b * gy - q_c * gx);
 
-	// Normalise quaternion
-	recipNorm = Mahony_invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-	q0 *= recipNorm;
-	q1 *= recipNorm;
-	q2 *= recipNorm;
-	q3 *= recipNorm;
-	anglesComputed = 0;
-}
-//---------------------------------------------------------------------------------------------------
-// IMU algorithm update
-
-void MahonyAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, float az) {
-    float recipNorm;
-    float halfvx, halfvy, halfvz;
-    float halfex, halfey, halfez;
-    float qa, qb, qc;
-
-    // Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
-    if(!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) {
-
-        // Normalise accelerometer measurement
-        recipNorm = Mahony_invSqrt(ax * ax + ay * ay + az * az);
-        ax *= recipNorm;
-        ay *= recipNorm;
-        az *= recipNorm;
-
-        // Estimated direction of gravity and vector perpendicular to magnetic flux
-        halfvx = q1 * q3 - q0 * q2;
-        halfvy = q0 * q1 + q2 * q3;
-        halfvz = q0 * q0 - 0.5f + q3 * q3;
-
-        // Error is sum of cross product between estimated and measured direction of gravity
-        halfex = (ay * halfvz - az * halfvy);
-        halfey = (az * halfvx - ax * halfvz);
-        halfez = (ax * halfvy - ay * halfvx);
-
-        // Compute and apply integral feedback if enabled
-        if(twoKi > 0.0f) {
-            integralFBx += twoKi * halfex  * invSampleFreq;	// integral error scaled by Ki
-            integralFBy += twoKi * halfey  * invSampleFreq;
-            integralFBz += twoKi * halfez  * invSampleFreq;
-            gx += integralFBx;	// apply integral feedback
-            gy += integralFBy;
-            gz += integralFBz;
-        }
-        else {
-            integralFBx = 0.0f;	// prevent integral windup
-            integralFBy = 0.0f;
-            integralFBz = 0.0f;
-        }
-
-        // Apply proportional feedback
-        gx += twoKpDef * halfex;
-        gy += twoKpDef * halfey;
-        gz += twoKpDef * halfez;
-    }
-
-    // Integrate rate of change of quaternion
-    gx *= (0.5f *   invSampleFreq);		// pre-multiply common factors
-    gy *= (0.5f  * invSampleFreq);
-    gz *= (0.5f  * invSampleFreq);
-    qa = q0;
-    qb = q1;
-    qc = q2;
-    q0 += (-qb * gx - qc * gy - q3 * gz);
-    q1 += (qa * gx + qc * gz - q3 * gy);
-    q2 += (qa * gy - qb * gz + q3 * gx);
-    q3 += (qa * gz + qb * gy - qc * gx);
-
-    // Normalise quaternion
-    recipNorm = Mahony_invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-    q0 *= recipNorm;
-    q1 *= recipNorm;
-    q2 *= recipNorm;
-    q3 *= recipNorm;
+	recip_norm = InvSqrt(q0_ * q0_ + q1_ * q1_ + q2_ * q2_ + q3_ * q3_);
+	q0_ *= recip_norm;
+	q1_ *= recip_norm;
+	q2_ *= recip_norm;
+	q3_ *= recip_norm;
+	angles_computed_ = false;
 }
 
-void Mahony_computeAngles()
+void MahonyAhrs::UpdateImu(float gx, float gy, float gz, float ax, float ay, float az)
 {
-	roll_mahony = atan2f(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2);  
-	roll_mahony *= 57.29578f;  
-	pitch_mahony =57.29578f * asinf(-2.0f * (q1*q3 - q0*q2));
-	yaw_mahony = atan2f(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3); 
-	yaw_mahony *=57.29578f;
-	anglesComputed = 1;
+	float recip_norm;
+	float half_vx, half_vy, half_vz;
+	float half_ex, half_ey, half_ez;
+	float q_a, q_b, q_c;
+
+	if (!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f)))
+	{
+		recip_norm = InvSqrt(ax * ax + ay * ay + az * az);
+		ax *= recip_norm;
+		ay *= recip_norm;
+		az *= recip_norm;
+
+		half_vx = q1_ * q3_ - q0_ * q2_;
+		half_vy = q0_ * q1_ + q2_ * q3_;
+		half_vz = q0_ * q0_ - 0.5f + q3_ * q3_;
+
+		half_ex = (ay * half_vz - az * half_vy);
+		half_ey = (az * half_vx - ax * half_vz);
+		half_ez = (ax * half_vy - ay * half_vx);
+
+		if (two_ki_ > 0.0f)
+		{
+			integral_fbx_ += two_ki_ * half_ex * inv_sample_freq_;
+			integral_fby_ += two_ki_ * half_ey * inv_sample_freq_;
+			integral_fbz_ += two_ki_ * half_ez * inv_sample_freq_;
+			gx += integral_fbx_;
+			gy += integral_fby_;
+			gz += integral_fbz_;
+		}
+		else
+		{
+			integral_fbx_ = 0.0f;
+			integral_fby_ = 0.0f;
+			integral_fbz_ = 0.0f;
+		}
+
+		gx += kTwoKp * half_ex;
+		gy += kTwoKp * half_ey;
+		gz += kTwoKp * half_ez;
+	}
+
+	gx *= (0.5f * inv_sample_freq_);
+	gy *= (0.5f * inv_sample_freq_);
+	gz *= (0.5f * inv_sample_freq_);
+	q_a = q0_;
+	q_b = q1_;
+	q_c = q2_;
+	q0_ += (-q_b * gx - q_c * gy - q3_ * gz);
+	q1_ += (q_a * gx + q_c * gz - q3_ * gy);
+	q2_ += (q_a * gy - q_b * gz + q3_ * gx);
+	q3_ += (q_a * gz + q_b * gy - q_c * gx);
+
+	recip_norm = InvSqrt(q0_ * q0_ + q1_ * q1_ + q2_ * q2_ + q3_ * q3_);
+	q0_ *= recip_norm;
+	q1_ *= recip_norm;
+	q2_ *= recip_norm;
+	q3_ *= recip_norm;
+	angles_computed_ = false;
 }
-float getRoll() {
-	if (!anglesComputed) Mahony_computeAngles();
-	return roll_mahony;
+
+void MahonyAhrs::ComputeAngles()
+{
+	roll_deg_ = std::atan2(q0_ * q1_ + q2_ * q3_, 0.5f - q1_ * q1_ - q2_ * q2_) * kRad2Deg;
+	pitch_deg_ = std::asin(-2.0f * (q1_ * q3_ - q0_ * q2_)) * kRad2Deg;
+	yaw_deg_ = std::atan2(q1_ * q2_ + q0_ * q3_, 0.5f - q2_ * q2_ - q3_ * q3_) * kRad2Deg;
+	angles_computed_ = true;
 }
-float getPitch() {
-	if (!anglesComputed) Mahony_computeAngles();
-	return pitch_mahony;
+
+float MahonyAhrs::RollDeg()
+{
+	if (!angles_computed_)
+	{
+		ComputeAngles();
+	}
+	return roll_deg_;
 }
-float getYaw() {
-	if (!anglesComputed) Mahony_computeAngles();
-	return yaw_mahony;
+
+float MahonyAhrs::PitchDeg()
+{
+	if (!angles_computed_)
+	{
+		ComputeAngles();
+	}
+	return pitch_deg_;
 }
-//============================================================================================
-// END OF CODE
-//============================================================================================
+
+float MahonyAhrs::YawDeg()
+{
+	if (!angles_computed_)
+	{
+		ComputeAngles();
+	}
+	return yaw_deg_;
+}
+
+} // namespace alg
