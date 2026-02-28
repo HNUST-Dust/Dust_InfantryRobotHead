@@ -24,11 +24,10 @@
 #include "app_booster.h"
 #include "bsp_can_port.h"
 #include "bsp_uart_port.h"
+#include "bsp_spi_port.h"
+#include "bsp_usb_port.h"
 #include "bsp_dwt.h"
 #include "../daemon_supervisor/supervisor.hpp"
-#include "../Drivers/can_tx_task.h"
-#include "../Drivers/uart_tx_task.h"
-#include "../Drivers/spi_tx_task.h"
 #include "../Communication/dvc_mcu_comm.h"
 #include "../Device/debug_tools.h"
 #include "../Device/motor_ids.hpp"
@@ -47,17 +46,9 @@ static void daemon_system_fault(DaemonClient&)
 void Bsp_BringUp(void)
 {
     dwt_init(480);
-    
+
     App_WirePlatformIo();
-
-    static CanTxTask s_can_tx_task;
-    s_can_tx_task.Start();
-
-    static UartTxTask s_uart_tx_task;
-    s_uart_tx_task.Start();
-
-    static SpiTxTask s_spi_tx_task;
-    s_spi_tx_task.Start();
+    
 
     // USB serialization/send is handled by BSP driver (bsp_usb_send_pc)
 }

@@ -19,6 +19,7 @@ static_assert(configASSERT_DEFINED == 1, "configASSERT_DEFINED expected");
 #include "actuator_state_topics.hpp"
 
 #include "bsp_dwt.h"
+#include "bsp_can_port.h"
 
 #include <cstring>
 
@@ -362,21 +363,19 @@ void DmMitMin::PublishFrame(uint16_t std_id, const uint8_t data[8], uint8_t len)
     if (!can_) {
         return;
     }
-
-    orb::CanTxFrame f{};
-    f.bus = cfg_.bus;
+    BspCanFrame f{};
     f.id = std_id;
-    f.id_type = orb::CanIdType::Std;
-    f.frame_type = orb::CanFrameType::Data;
-    f.is_fd = false;
-    f.brs = false;
     f.len = len;
-    std::memset(f.data, 0, sizeof(f.data));
     if (len > 0) {
         const uint8_t n = (len <= 8) ? len : 8;
         std::memcpy(f.data, data, n);
     }
-    orb::can_tx.publish(f);
+    f.id_type = BSP_CAN_ID_STD;
+    f.frame_type = BSP_CAN_FRAME_DATA;
+    f.is_fd = false;
+    f.brs = false;
+    f.from_fifo1 = false;
+    bsp_can_send(can_, &f);
 }
 
 void DmMitMin::PublishMitTx(float kp, float kd) {

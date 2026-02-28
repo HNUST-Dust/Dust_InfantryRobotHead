@@ -5,6 +5,7 @@
 #include "task.h"
 #include "cmsis_os2.h"
 #include "../communication_topic/pc_comm_topics.hpp"
+#include <cassert>
 
 extern uint8_t g_recived_flag;
 
@@ -48,13 +49,22 @@ void PcComm::RxCpltCallback(uint16_t len) {
 }
 
 void PcComm::Task() {
-    Subscription<orb::PcSendAutoAimData> send_sub(orb::pc_send);
     for (;;) {
-        orb::PcSendAutoAimData pending{};
-        if (send_sub.copy(pending)) {
-            pc_send_data_ = pending;
-            orb::pc_send.publish(pc_send_data_);
+        if (g_recived_flag) {
+            g_recived_flag = 0;
+            // 这里可以处理接收数据（如有需要）
+        }
+        // 发送数据直接调用 bsp_usb_transmit
+        if (pc_send_data_pending_) {
+            BspUsbHandle h = bsp_usb_get();
+            bsp_usb_transmit(h, reinterpret_cast<const uint8_t*>(&pc_send_data_), sizeof(pc_send_data_));
+            pc_send_data_pending_ = false;
         }
         osDelay(1);
     }
+}
+
+void PcComm::Send(const orb::PcSendAutoAimData& data) {
+    pc_send_data_ = data;
+    pc_send_data_pending_ = true;
 }

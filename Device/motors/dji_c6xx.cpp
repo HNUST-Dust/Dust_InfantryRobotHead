@@ -17,6 +17,8 @@ static_assert(configASSERT_DEFINED == 1, "configASSERT_DEFINED expected");
 
 #include <cstring>
 
+#include "bsp_can_port.h"
+
 namespace actuator::drivers {
 
 namespace {
@@ -46,18 +48,18 @@ static StaticTask_t s_task_tcb;
 static StackType_t s_task_stack[512];
 static osThreadId_t s_task_thread = nullptr;
 
+static BspCanHandle s_group_can = nullptr;
+
 static void publish_group_current()
 {
-    // 发布 DJI C6xx 组电流帧（0x200 默认）：每个电机 16-bit 有符号大端
-    // data[0..1]=m0, [2..3]=m1, [4..5]=m2, [6..7]=m3
-    orb::CanTxFrame out{};
-    out.bus = s_group_ctx.bus;
+    BspCanFrame out{};
     out.id = s_group_ctx.tx_id;
-    out.id_type = orb::CanIdType::Std;
-    out.frame_type = orb::CanFrameType::Data;
+    out.len = 8;
+    out.id_type = BSP_CAN_ID_STD;
+    out.frame_type = BSP_CAN_FRAME_DATA;
     out.is_fd = false;
     out.brs = false;
-    out.len = 8;
+    out.from_fifo1 = false;
     std::memset(out.data, 0, sizeof(out.data));
 
     const uint16_t c0 = static_cast<uint16_t>(static_cast<int16_t>(s_current_raw[0]));
@@ -74,7 +76,9 @@ static void publish_group_current()
     out.data[6] = static_cast<uint8_t>((c3 >> 8) & 0xFF);
     out.data[7] = static_cast<uint8_t>(c3 & 0xFF);
 
-    orb::can_tx.publish(out);
+    if (s_group_can) {
+        bsp_can_send(s_group_can, &out);
+    }
 }
 
 static int32_t rx_id_to_slot(uint16_t tx_id, uint16_t rx_id)
@@ -222,7 +226,7 @@ int16_t DjiC6xxMin::target_current_raw() const {
 
 void DjiC6xxMin::JoinRuntime(uint16_t tx_id) {
     configASSERT(can_ != nullptr);
-
+    s_group_can = can_;
     // 全局组帧配置：默认只支持一个 DJI C6xx 组（同一 bus + tx_id）
     s_group_ctx.bus = cfg_.bus;
     s_group_ctx.tx_id = tx_id;

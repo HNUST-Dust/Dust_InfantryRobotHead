@@ -37,7 +37,9 @@ target_link_options(${PROJECT_NAME}.elf PRIVATE
     -T ${LINKER_SCRIPT}
 )
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_link_options(${PROJECT_NAME}.elf PRIVATE -Wl,--no-warn-rwx-segments)
+    # target_link_options(${PROJECT_NAME}.elf PRIVATE -Wl,--no-warn-rwx-segments)
+    target_link_options(${PROJECT_NAME}.elf PRIVATE -W)
+
 endif()
 
 target_link_directories(${PROJECT_NAME}.elf PRIVATE ${CMAKE_SOURCE_DIR}/ThirdParty/ARM/DSP/Lib)
