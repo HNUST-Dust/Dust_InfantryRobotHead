@@ -48,7 +48,6 @@ target_link_libraries(${PROJECT_NAME}.elf PRIVATE libarm_cortexM7lfsp_math.a)
 add_subdirectory(ThirdParty)
 add_subdirectory(Board/dm-h723)
 add_subdirectory(Platform)
-add_subdirectory(System)
 add_subdirectory(Algorithm)
 add_subdirectory(Drivers)
 add_subdirectory(Communication)
@@ -60,7 +59,6 @@ target_link_libraries(${PROJECT_NAME}.elf PRIVATE
     dust_thirdparty
     dust_board_dm_h723
     dust_platform
-    dust_system
     dust_algorithm
     dust_drivers
     dust_communication

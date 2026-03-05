@@ -1,43 +1,47 @@
-/**
- * @file debug_tools.h
- * @brief 调试工具设备封装（VOFA）：通过 Topic 化 UART TX 发送调试数据，并以 RX 作为在线判据。
- *
- * **定位**
- * - 该模块用于与 PC 侧调试工具（VOFA 等）交互。
- * - 发送路径遵循“唯一出口”原则：只发布 `orb::uart_tx`，由 Drivers/UartTxTask 统一发送。
- *
- * **在线判据/守护**
- * - 仅在收到新的 VOFA RX 帧时 feed（由 `VofaReceiveCallback()` 驱动）。
- * - Start() 会写入 baseline 时间戳，避免刚启动就被判离线。
- *
- * **约束**
- * - 仅保存 UART 句柄作为 RX wiring 的引用；实际发送使用绑定的 `orb::UartPort`。
- */
-
 #ifndef DEBUG_TOOLS_H_
 #define DEBUG_TOOLS_H_
 
 #include <cstdint>
 #include "bsp_uart_port.h"
 
-#include "../communication_topic/uart_topics.hpp"
+#include <atomic>
+
 
 class DebugTools
 {
-
 private:
     BspUartHandle uart_ = nullptr;
-    orb::UartPort vofa_port_ = orb::UartPort::U7;
     bool started_ = false;
+
+    // 内部发送线程
+    void* thread_ = nullptr;
+    static void TaskEntry(void* argument);
+    void Task();
+
+    // 这里用简单的共享缓冲：由其它模块/回调写入，线程周期性发送。
+    // 约束：每次最多发送 32 个 float。
+    static constexpr uint32_t kMaxFloats = 32;
+    std::atomic<uint32_t> float_count_{0};
+    float floats_[kMaxFloats] = {0};
 
 public:
     // Singleton accessor (explicit call-site; no global free-function)
     static DebugTools& Instance();
 
-    void Init(BspUartHandle uart, orb::UartPort vofa_port);
+    // 绑定 UART 句柄（通过 bsp_uart_get 获取）
+    void Init(BspUartHandle uart);
 
+    // 创建线程并开始发送
+    void StartThread();
+
+    // 供其它模块调用：推送一个要发送的 float（满了会丢弃）
+    void FeedFloat(float v);
+
+    // 兼容旧调用：立即发送一次（直接走 bsp_uart_send）
     void VofaSendFloat(float data);
     void VofaSendTail();
+
+    // RX 回调（如果你用它做“在线判据/喂狗”，就在这里处理）
     void VofaReceiveCallback(uint8_t *buffer, uint16_t length);
 };
 

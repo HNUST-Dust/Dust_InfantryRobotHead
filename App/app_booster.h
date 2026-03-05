@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Device/debug_tools.h"
+#include "../Algorithm/control/alg_pid.h"
 #include "cmsis_os2.h"
 
 class Booster 
@@ -20,6 +21,11 @@ private:
     float left_wheel_omega_ = 0.0f;
     float right_wheel_omega_ = 0.0f;
     float poke_omega_ = 0.0f;
+
+    // 速度环 PID
+    alg::Pid left_wheel_pid_;
+    alg::Pid right_wheel_pid_;
+    alg::Pid poke_pid_;
 
     bool started_ = false;
     osThreadId_t thread_ = nullptr;

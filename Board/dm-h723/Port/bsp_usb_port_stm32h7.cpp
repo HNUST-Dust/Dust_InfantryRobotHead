@@ -3,9 +3,6 @@
 
 #include "bsp_usb_port.h"
 #include "../Inc/usbd_cdc_if.h"
-#include "../../../../communication_topic/pc_comm_topics.hpp"
-
-using namespace orb;
 
 struct BspUsbOpaque {
     BspUsbCallback tx_cb;
@@ -24,17 +21,8 @@ static void c_tx_trampoline(uint16_t len) {
 }
 
 static void c_rx_trampoline(uint16_t len) {
-    // First, call user callback if present
+    // BSP 层只做回调透传，不做任何协议解析/话题发布
     if (g_usb_impl.rx_cb) g_usb_impl.rx_cb(len);
-
-    // Then, driver-side deserialize and publish high-level topic if available
-    uint8_t* rx = s_rx_buffer;
-    if (!rx) return;
-    if (rx[0] == 'S' && rx[1] == 'P') {
-        PcRecvAutoAimData parsed{};
-        deserializePcRecv(rx, parsed);
-        pc_recv.publish(parsed);
-    }
 }
 
 // Port-level API: 直接使用底层 HAL 接口，不再导出旧的 USB_* 全局/函数
@@ -43,7 +31,7 @@ void bsp_usb_init(BspUsbHandle h, BspUsbCallback tx_cb, BspUsbCallback rx_cb) {
     h->tx_cb = tx_cb;
     h->rx_cb = rx_cb;
     // Register callbacks with HAL and obtain RX buffer
-    s_rx_buffer = CDCInitRxbufferNcallback((USBCallback)c_tx_trampoline, (USBCallback)c_rx_trampoline);
+    s_rx_buffer = CDCInitRxbufferNcallback((UsbCallback)c_tx_trampoline, (UsbCallback)c_rx_trampoline);
 }
 
 bool bsp_usb_transmit(BspUsbHandle h, const uint8_t* data, uint16_t length) {

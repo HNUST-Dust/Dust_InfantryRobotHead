@@ -30,7 +30,6 @@ function(dust_configure_options options_target)
         ${CMAKE_SOURCE_DIR}/Board/dm-h723
         ${CMAKE_SOURCE_DIR}/Board/dm-h723/Inc
         ${CMAKE_SOURCE_DIR}/Platform
-        ${CMAKE_SOURCE_DIR}/System
         ${CMAKE_SOURCE_DIR}/ThirdParty/STM32H7xx_HAL_Driver/Inc
         ${CMAKE_SOURCE_DIR}/ThirdParty/STM32H7xx_HAL_Driver/Inc/Legacy
         ${CMAKE_SOURCE_DIR}/ThirdParty/FreeRTOS/Source/include
