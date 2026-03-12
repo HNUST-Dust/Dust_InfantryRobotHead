@@ -72,10 +72,6 @@ void VT03_UART1_Callback(uint8_t *Buffer, uint16_t Length)
     Commander.VT03.UART_RxCpltCallback(Buffer,Length);
 }
 
-void dr16_uart1_callback(uint8_t *Buffer, uint16_t Length)
-{
-    Commander.dr16_.RxCpltCallback(Buffer,Length);
-}
 
 void vt02_uart1_callback(uint8_t *buffer, uint16_t length)
 {
@@ -108,9 +104,9 @@ void Init()
     // USB初始化
     USB_Init(usb_tx_callback,usb_rx_callback);
     // UART1 初始化，新图传通讯
-    // UART_Init(&huart1,VT03_UART1_Callback,512);
+    UART_Init(&huart1,VT03_UART1_Callback,512);
     // UART_Init(&huart1,dr16_uart1_callback,1024);
-    UART_Init(&huart1,vt02_uart1_callback,512);
+    // UART_Init(&huart1,vt02_uart1_callback,512);
     // CAN1 初始化，控制发射
     CAN_Init(&hfdcan1,Device_CAN1_Callback);
     // CAN2 初始化，与下板通讯

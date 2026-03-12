@@ -7,7 +7,6 @@
 #include "bsp_dwt.h"
 #include "cmsis_os2.h"
 #include "VT03.h"
-#include "dr16.h"
 #include "commander.h"
 #include "debug_tools.h"
 #include <cstring>
@@ -20,7 +19,6 @@ void Commander::Init()
     imu_.Init();
     // 图传接收机初始化
     VT03.Init(&huart1);
-    dr16_.Init();
     // 与下板通讯服务初始化
     MCU_Comm.Init(&hfdcan2,0x00,0x01);
     // 与上位机通讯初始化
@@ -133,6 +131,8 @@ void Commander::publish_control_info()
             Booster.Set_Switch_Statue(0);
         }else if(Booster.Get_Switch_Statue() == 0){
             Booster.Set_Switch_Statue(1);
+            
+            MCU_Comm.MCU_Comm_Data.Booster_Status = 1;
         }
     }
 
@@ -184,6 +184,12 @@ void Commander::publish_control_info()
         MCU_Comm.MCU_Comm_Data.Chassis_Spin         = (uint8_t)(VT03.Data.Mode_Switch); //并允许遥控器命令进行覆盖
     }
 
+    if(VT03.Data.Keyboard_Key[VT03_KEY_CTRL] == VT03_Key_Status_PRESSED) // ctrl
+    {
+        MCU_Comm.MCU_Comm_Data.Fast_Run = 1; // 快跑
+    } else {
+        MCU_Comm.MCU_Comm_Data.Fast_Run = 0; // 慢走
+    }
     if((uint8_t)(VT03.Data.Pause) == 1 
         || VT03.Data.Keyboard_Key[7] == VT03_Key_Status_PRESSED)//E键
     {
@@ -202,27 +208,57 @@ void Commander::publish_control_info()
     }
 
     // 左侧自定义按键逻辑
-    if (VT03.Data.Left_Key == VT03_Key_Status_TRIG_PRESSED_FREE 
-        || VT03.Data.Keyboard_Key[9] == VT03_Key_Status_TRIG_PRESSED_FREE){
-        if (Booster.Get_Switch_Statue() == 1){
+    bool booster_toggle_triggered = false;
+    if (VT03.Data.Left_Key == VT03_Key_Status_TRIG_PRESSED_FREE)
+    {
+        // ★ 消费事件，防止重复触发
+        VT03.Data.Left_Key = VT03_Key_Status_FREE;
+        booster_toggle_triggered = true;
+    }
+    if (VT03.Data.Keyboard_Key[9] == VT03_Key_Status_TRIG_PRESSED_FREE)
+    {
+        // ★ 消费事件，防止重复触发
+        VT03.Data.Keyboard_Key[9] = VT03_Key_Status_FREE;
+        booster_toggle_triggered = true;
+    }
+    if (booster_toggle_triggered)
+    {
+        if (Booster.Get_Switch_Statue() == 1)
+        {
             Booster.Set_Switch_Statue(0);
-        }else if(Booster.Get_Switch_Statue() == 0){
+        }
+        else if (Booster.Get_Switch_Statue() == 0)
+        {
             Booster.Set_Switch_Statue(1);
         }
     }
-    //遥控器扳机键逻辑
-    if (VT03.Data.Right_Key == VT03_Key_Status_PRESSED 
-        || VT03.Data.Keyboard_Key[8] == VT03_Key_Status_PRESSED){
+
+    // 云台归零逻辑（消费事件，防止重复触发）
+    if (VT03.Data.Keyboard_Key[VT03_KEY_B] == VT03_Key_Status_TRIG_PRESSED_FREE)
+    {
+        // ★ 消费事件，防止重复触发
+        VT03.Data.Keyboard_Key[VT03_KEY_B] = VT03_Key_Status_FREE;
+        MCU_Comm.MCU_Comm_Data.Gimbal_SetZero = 1;
+    }
+    //拨弹盘逻辑（与VT02一致：R键按住退弹）
+    if (VT03.Data.Keyboard_Key[VT03_KEY_R] == VT03_Key_Status_PRESSED
+        || VT03.Data.Right_Key == VT03_Key_Status_PRESSED)
+    {
         Booster.Set_Reverse_Statue(1);
-    }else if (VT03.Data.Right_Key == VT03_Key_Status_FREE 
-        || VT03.Data.Keyboard_Key[8] == VT03_Key_Status_FREE){
+    }
+    else
+    {
         Booster.Set_Reverse_Statue(0);
     }
-    if (VT03.Data.Trigger == VT03_Key_Status_PRESSED 
-        || VT03.Data.Mouse_Left_Key == VT03_Key_Status_PRESSED){
+
+    // 发射逻辑（与VT02一致：鼠标左键按住连发）
+    if (VT03.Data.Mouse_Left_Key == VT03_Key_Status_PRESSED
+        || VT03.Data.Trigger == VT03_Key_Status_PRESSED)
+    {
         Booster.Set_Shoot_Statue(1);
-    }else if (VT03.Data.Trigger == VT03_Key_Status_FREE 
-        || VT03.Data.Mouse_Left_Key == VT03_Key_Status_FREE){
+    }
+    else
+    {
         Booster.Set_Shoot_Statue(0);
     }
 #endif

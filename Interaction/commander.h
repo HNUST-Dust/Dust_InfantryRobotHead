@@ -11,13 +11,12 @@
 #include "IMU.hpp"
 // module
 #include "debug_tools.h"
-#include "dr16.h"
 #include "mcu_comm.h"
 #include "pc_comm.h"
 #include "VT03.h"
 #include "VT02.h"
 
-#define USE_VT02 
+// #define USE_VT02 
 class Commander
 {
 public:
@@ -27,7 +26,6 @@ public:
     Class_MCU_Comm MCU_Comm;
     // 与接收机通讯服务
     Class_VT03 VT03;
-    DR16 dr16_;
     VT02 vt02_;
     // 与上位机通讯
     Class_PC_Comm PC_Comm;
