@@ -15,6 +15,8 @@ struct Struct_MCU_Comm_Data
     uint8_t Supercap;           // 超级电容：充电、放电
     uint8_t AutoAim;            // 自瞄开关
     uint8_t Gimbal_SetZero;     // 云台归零
+    uint8_t Booster_Status;     // 发射机构状态
+    uint8_t Fast_Run;           // 快跑开关
 };
 constexpr uint8_t REMOTE_CONTRL_ID = 0xAB;
 
@@ -59,6 +61,8 @@ public:
         1,
         0,
         0,
+        0,
+        0
     };
 
     McuAutoaimData MCU_AutoAim_Data = {

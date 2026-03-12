@@ -36,6 +36,8 @@ void Class_MCU_Comm::CANSendCommandAndUI()
      CAN_Tx_Frame[6] = MCU_Comm_Data.Supercap;
      CAN_Tx_Frame[7] = MCU_Comm_Data.AutoAim;
      CAN_Tx_Frame[8] = MCU_Comm_Data.Gimbal_SetZero;
+     CAN_Tx_Frame[9] = MCU_Comm_Data.Booster_Status;
+     CAN_Tx_Frame[10] = MCU_Comm_Data.Fast_Run;
      
      FDCAN_Send_Data(CAN_Manage_Object->CAN_Handler, REMOTE_CONTRL_ID, CAN_Tx_Frame, 12);
 }
