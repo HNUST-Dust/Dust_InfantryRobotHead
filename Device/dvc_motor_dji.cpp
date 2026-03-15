@@ -1,6 +1,7 @@
 /* Includes ------------------------------------------------------------------*/
 
 #include "dvc_motor_dji.h"
+#include "alg_math.h"
 #include "arm_math.h"
 /* Private macros ------------------------------------------------------------*/
 
@@ -266,8 +267,6 @@ void Class_Motor_DJI_C610::CAN_RxCpltCallback(uint8_t *Rx_Data)
  */
 void Class_Motor_DJI_C610::Calculate_PeriodElapsedCallback()
 {
-    PID_Calculate();
-
     float tmp_value = Target_Current + Feedforward_Current;
     math_constrain(&tmp_value, -Current_Max, Current_Max);
     Out = tmp_value * Current_To_Out;
@@ -317,53 +316,6 @@ void Class_Motor_DJI_C610::Data_Process()
 
     // 存储预备信息
     Rx_Data.Pre_Encoder = tmp_encoder;
-}
-
-/**
- * @brief 计算PID
- *
- */
-void Class_Motor_DJI_C610::PID_Calculate()
-{
-    switch (Motor_DJI_Control_Method)
-    {
-    case (Motor_DJI_Control_Method_CURRENT):
-    {
-        break;
-    }
-    case (Motor_DJI_Control_Method_OMEGA):
-    {
-        PID_Omega.SetTarget(Target_Omega + Feedforward_Omega);
-        PID_Omega.SetNow(Rx_Data.Now_Omega);
-        PID_Omega.CalculatePeriodElapsedCallback();
-
-        Target_Current = PID_Omega.GetOut();
-
-        break;
-    }
-    case (Motor_DJI_Control_Method_ANGLE):
-    {
-        PID_Angle.SetTarget(Target_Angle);
-        PID_Angle.SetNow(Rx_Data.Now_Angle);
-        PID_Angle.CalculatePeriodElapsedCallback();
-
-        Target_Omega = PID_Angle.GetOut();
-
-        PID_Omega.SetTarget(Target_Omega + Feedforward_Omega);
-        PID_Omega.SetNow(Rx_Data.Now_Omega);
-        PID_Omega.CalculatePeriodElapsedCallback();
-
-        Target_Current = PID_Omega.GetOut();
-
-        break;
-    }
-    default:
-    {
-        Target_Current = 0.0f;
-
-        break;
-    }
-    }
 }
 
 /**
@@ -429,8 +381,6 @@ void Class_Motor_DJI_C620::Alive_PeriodElapsedCallback()
         // 电机断开连接
         Motor_DJI_Status = Motor_DJI_Status_DISABLE;
         Motor_DJI_Control_Method = Motor_DJI_Control_Method_CURRENT;
-        PID_Angle.SetIntegralError(0.0f);
-        PID_Omega.SetIntegralError(0.0f);
         Target_Current = 0.0f;
     }
     else
@@ -447,8 +397,6 @@ void Class_Motor_DJI_C620::Alive_PeriodElapsedCallback()
  */
 void Class_Motor_DJI_C620::Calculate_PeriodElapsedCallback()
 {
-    PID_Calculate();
-
     float tmp_value = Target_Current + Feedforward_Current;
     math_constrain(&tmp_value, -Current_Max, Current_Max);
     Out = tmp_value * Current_To_Out;
@@ -525,53 +473,6 @@ void Class_Motor_DJI_C620::Data_Process()
 
     // 存储预备信息
     Rx_Data.Pre_Encoder = tmp_encoder;
-}
-
-/**
- * @brief 计算PID
- *
- */
-void Class_Motor_DJI_C620::PID_Calculate()
-{
-    switch (Motor_DJI_Control_Method)
-    {
-    case (Motor_DJI_Control_Method_CURRENT):
-    {
-        break;
-    }
-    case (Motor_DJI_Control_Method_OMEGA):
-    {
-        PID_Omega.SetTarget(Target_Omega + Feedforward_Omega);
-        PID_Omega.SetNow(Rx_Data.Now_Omega);
-        PID_Omega.CalculatePeriodElapsedCallback();
-
-        Target_Current = PID_Omega.GetOut();
-
-        break;
-    }
-    case (Motor_DJI_Control_Method_ANGLE):
-    {
-        PID_Angle.SetTarget(Target_Angle);
-        PID_Angle.SetNow(Rx_Data.Now_Angle);
-        PID_Angle.CalculatePeriodElapsedCallback();
-
-        Target_Omega = PID_Angle.GetOut();
-
-        PID_Omega.SetTarget(Target_Omega + Feedforward_Omega);
-        PID_Omega.SetNow(Rx_Data.Now_Omega);
-        PID_Omega.CalculatePeriodElapsedCallback();
-
-        Target_Current = PID_Omega.GetOut();
-
-        break;
-    }
-    default:
-    {
-        Target_Current = 0.0f;
-
-        break;
-    }
-    }
 }
 
 /**

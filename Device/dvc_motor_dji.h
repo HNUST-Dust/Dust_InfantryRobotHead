@@ -1,7 +1,6 @@
 #ifndef MOTOR_DJI_H
 #define MOTOR_DJI_H
 
-#include "alg_pid.h"
 #include "drv_can.h"
 
 /**
@@ -98,15 +97,10 @@ struct Struct_Motor_DJI_Rx_Data
 class Class_Motor_DJI_C620
 {
 public:
-    // PID角度环控制
-    Pid PID_Angle;
-    // PID角速度环控制
-    Pid PID_Omega;
-
     void Init(
         FDCAN_HandleTypeDef *hcan,
         Enum_Motor_DJI_ID __CAN_Rx_ID,
-        Enum_Motor_DJI_Control_Method __Motor_DJI_Control_Method = Motor_DJI_Control_Method_OMEGA,
+        Enum_Motor_DJI_Control_Method __Motor_DJI_Control_Method = Motor_DJI_Control_Method_CURRENT,
         float __Gearbox_Rate = 268.0f / 17.0f,
         Enum_Motor_DJI_Power_Limit_Status __Power_Limit_Status = Motor_DJI_Power_Limit_Status_DISABLE,
         float __Current_Max = 20.0f);
@@ -227,7 +221,7 @@ protected:
     // 读写变量
 
     // 电机控制方式
-    Enum_Motor_DJI_Control_Method Motor_DJI_Control_Method = Motor_DJI_Control_Method_ANGLE;
+    Enum_Motor_DJI_Control_Method Motor_DJI_Control_Method = Motor_DJI_Control_Method_CURRENT;
     // 目标的角度, rad
     float Target_Angle = 0.0f;
     // 目标的速度, rad/s
@@ -245,8 +239,6 @@ protected:
 
     void Data_Process();
 
-    void PID_Calculate();
-
     void Power_Limit_Control();
 
     // void Output();
@@ -255,15 +247,10 @@ protected:
 class Class_Motor_DJI_C610
 {
 public:
-    // PID角度环控制
-    Pid PID_Angle;
-    // PID角速度环控制
-    Pid PID_Omega;
-
     void Init(
         FDCAN_HandleTypeDef *hcan,
         Enum_Motor_DJI_ID __CAN_Rx_ID,
-        Enum_Motor_DJI_Control_Method __Motor_DJI_Control_Method = Motor_DJI_Control_Method_OMEGA,
+        Enum_Motor_DJI_Control_Method __Motor_DJI_Control_Method = Motor_DJI_Control_Method_CURRENT,
         float __Gearbox_Rate = 36.0f,
         float __Current_Max = 10.0f);
 
@@ -355,7 +342,7 @@ protected:
     // 读写变量
 
     // 电机控制方式
-    Enum_Motor_DJI_Control_Method Motor_DJI_Control_Method = Motor_DJI_Control_Method_ANGLE;
+    Enum_Motor_DJI_Control_Method Motor_DJI_Control_Method = Motor_DJI_Control_Method_CURRENT;
     // 目标的角度, rad
     float Target_Angle = 0.0f;
     // 目标的速度, rad/s
@@ -370,8 +357,6 @@ protected:
     // 内部函数
 
     void Data_Process();
-
-    void PID_Calculate();
 
     // void Output();
 };
