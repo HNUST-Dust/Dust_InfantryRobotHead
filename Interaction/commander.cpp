@@ -3,12 +3,13 @@
 #include "imu_temp_ctrl.h"
 #include "mcu_comm.h"
 #include "pc_comm.h"
-
+#include "alg_math.h"
 #include "bsp_dwt.h"
 #include "cmsis_os2.h"
 #include "VT03.h"
 #include "commander.h"
 #include "debug_tools.h"
+#include "hipnuc_imu.hpp"
 #include <cstring>
 
 void Commander::Init()
@@ -17,6 +18,8 @@ void Commander::Init()
     dwt_init(480);
     // IMU初始化
     imu_.Init();
+    // hipnuc IMU初始化
+    hipnuc_imu_.Init();
     // 图传接收机初始化
     VT03.Init(&huart1);
     // 与下板通讯服务初始化
@@ -273,6 +276,31 @@ void Commander::publish_control_info()
 
 void Commander::transfer_info_to_pc()
 {
+
+    // 重新根据欧拉角重构四元数，但将pitch取反，使得通过四元数解算出的pitch方向相反，yaw/roll保持不变
+    float phi = hipnuc_imu_.roll_angle_rad_;    // roll (rad)
+    float theta = hipnuc_imu_.pitch_angle_rad_;          // pitch (rad)
+    float psi = hipnuc_imu_.yaw_angle_rad_;              // yaw (rad)
+    theta = -theta; // 取反pitch
+
+    float cy = cosf(psi * 0.5f);
+    float sy = sinf(psi * 0.5f);
+    float cp = cosf(theta * 0.5f);
+    float sp = sinf(theta * 0.5f);
+    float cr = cosf(phi * 0.5f);
+    float sr = sinf(phi * 0.5f);
+
+    // 四元数 (w, x, y, z) 对应 ZYX (yaw-pitch-roll) 顺序构造
+    float qw = cy * cp * cr + sy * sp * sr;
+    float qx = cy * cp * sr - sy * sp * cr;
+    float qy = cy * sp * cr + sy * cp * sr;
+    float qz = sy * cp * cr - cy * sp * sr;
+
+    g_q_vision[0] = qw;
+    g_q_vision[1] = qx;
+    g_q_vision[2] = qy;
+    g_q_vision[3] = qz;
+
     // 将下板传回的数据发送给上位机
     PC_Comm.PC_Send_Data.mode = 1; // 自瞄模式
     memcpy(PC_Comm.PC_Send_Data.q,
@@ -349,6 +377,10 @@ void Commander::subscribe_info_from_pc()
 
 void Commander::publish_posture_info_to_bottomboard()
 {
+    memcpy(MCU_Comm.mcu_imu_data_.total_yaw_angle, &hipnuc_imu_.total_yaw_angle_rad_, sizeof(float));
+    memcpy(MCU_Comm.mcu_imu_data_.pitch_angle, &hipnuc_imu_.pitch_angle_rad_, sizeof(float));
+    memcpy(MCU_Comm.mcu_imu_data_.yaw_omega, &g_yaw_omega, sizeof(float));
+    memcpy(MCU_Comm.mcu_imu_data_.pitch_omega, &hipnuc_imu_.pitch_omega_rad_, sizeof(float));
     // 将陀螺仪数据发送给下板
     MCU_Comm.CanSendImu();
 }
@@ -363,12 +395,14 @@ void Commander::Task()
         subscribe_info_from_pc();
         publish_posture_info_to_bottomboard();
 
-        // debugtools_.VofaSendFloat((float)vt02_.GetData()->mouse.x);
-        // debugtools_.VofaSendFloat((float)vt02_.GetData()->mouse.y);
-        // debugtools_.VofaSendFloat((float)MCU_Comm.MCU_Comm_Data.Yaw_Angle);
-        // debugtools_.VofaSendFloat((float)MCU_Comm.MCU_Comm_Data.Pitch_Angle);
+        debugtools_.VofaSendFloat(Booster.target_omega_3);
+        debugtools_.VofaSendFloat(Booster.Motor_Booster_3.Get_Now_Omega());
+        debugtools_.VofaSendFloat(Booster.target_omega_1);
+        debugtools_.VofaSendFloat(Booster.Motor_Booster_1.Get_Now_Omega());
+        debugtools_.VofaSendFloat(Booster.target_omega_2);
+        debugtools_.VofaSendFloat(Booster.Motor_Booster_2.Get_Now_Omega());
         // debugtools_.VofaSendFloat((float)vt02_.GetData()->mouse.z);
-        // debugtools_.VofaSendTail();
+        debugtools_.VofaSendTail();
         osDelay(pdMS_TO_TICKS(1));
     }
 }

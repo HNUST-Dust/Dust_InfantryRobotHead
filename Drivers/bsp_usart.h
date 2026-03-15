@@ -57,7 +57,7 @@ extern Struct_UART_Manage_Object UART5_Manage_Object;
 extern Struct_UART_Manage_Object UART6_Manage_Object;
 extern Struct_UART_Manage_Object UART7_Manage_Object;
 extern Struct_UART_Manage_Object UART8_Manage_Object;
-
+extern Struct_UART_Manage_Object UART10_Manage_Object;
 /* Exported function declarations --------------------------------------------*/
 
 void UART_Init(UART_HandleTypeDef *huart, UART_Call_Back Callback_Function, uint16_t Rx_Buffer_Length);

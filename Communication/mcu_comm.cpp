@@ -84,29 +84,25 @@ void Class_MCU_Comm::CanSendImu()
      static uint8_t can_tx_frame[16];
      // 把float转换成字节
      union { float f; uint8_t b[4]; } conv;
-     conv.f = g_total_yaw;
-     can_tx_frame[0] = conv.b[0];
-     can_tx_frame[1] = conv.b[1];
-     can_tx_frame[2] = conv.b[2];
-     can_tx_frame[3] = conv.b[3];
+     can_tx_frame[0] = mcu_imu_data_.total_yaw_angle[0];
+     can_tx_frame[1] = mcu_imu_data_.total_yaw_angle[1];
+     can_tx_frame[2] = mcu_imu_data_.total_yaw_angle[2];
+     can_tx_frame[3] = mcu_imu_data_.total_yaw_angle[3];
 
-     conv.f = g_pitch;
-     can_tx_frame[4] = conv.b[0];
-     can_tx_frame[5] = conv.b[1];
-     can_tx_frame[6] = conv.b[2];
-     can_tx_frame[7] = conv.b[3];
+     can_tx_frame[4] = mcu_imu_data_.pitch_angle[0];
+     can_tx_frame[5] = mcu_imu_data_.pitch_angle[1];
+     can_tx_frame[6] = mcu_imu_data_.pitch_angle[2];
+     can_tx_frame[7] = mcu_imu_data_.pitch_angle[3];
 
-     conv.f = g_yaw_omega;
-     can_tx_frame[8] = conv.b[0];
-     can_tx_frame[9] = conv.b[1];
-     can_tx_frame[10] = conv.b[2];
-     can_tx_frame[11] = conv.b[3];
+     can_tx_frame[8] = mcu_imu_data_.yaw_omega[0];
+     can_tx_frame[9] = mcu_imu_data_.yaw_omega[1];
+     can_tx_frame[10] = mcu_imu_data_.yaw_omega[2];
+     can_tx_frame[11] = mcu_imu_data_.yaw_omega[3];
 
-     conv.f = g_pitch_omega;
-     can_tx_frame[12] = conv.b[0];
-     can_tx_frame[13] = conv.b[1];
-     can_tx_frame[14] = conv.b[2];
-     can_tx_frame[15] = conv.b[3];
+     can_tx_frame[12] = mcu_imu_data_.pitch_omega[0];
+     can_tx_frame[13] = mcu_imu_data_.pitch_omega[1];
+     can_tx_frame[14] = mcu_imu_data_.pitch_omega[2];
+     can_tx_frame[15] = mcu_imu_data_.pitch_omega[3];
 
      FDCAN_Send_Data(CAN_Manage_Object->CAN_Handler, IMU_INFO_ID, can_tx_frame, 16);
 }

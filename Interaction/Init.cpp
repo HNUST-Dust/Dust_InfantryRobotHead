@@ -77,6 +77,11 @@ void vt02_uart1_callback(uint8_t *buffer, uint16_t length)
 {
     Commander.vt02_.RxCpltCallback(buffer, length);
 }
+
+void hipnuc_uart10_callback(uint8_t *buffer, uint16_t length)
+{
+    Commander.hipnuc_imu_.RxCpltCallback(buffer, length);
+}
 /**
  * @bief USB接收完成回调函数
  *
@@ -107,6 +112,8 @@ void Init()
     UART_Init(&huart1,VT03_UART1_Callback,512);
     // UART_Init(&huart1,dr16_uart1_callback,1024);
     // UART_Init(&huart1,vt02_uart1_callback,512);
+    // UART10
+    UART_Init(&huart10,hipnuc_uart10_callback,512);
     // CAN1 初始化，控制发射
     CAN_Init(&hfdcan1,Device_CAN1_Callback);
     // CAN2 初始化，与下板通讯

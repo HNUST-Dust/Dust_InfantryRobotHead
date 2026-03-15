@@ -9,6 +9,7 @@
 // app
 #include "booster.h"
 #include "IMU.hpp"
+#include "hipnuc_imu.hpp"
 // module
 #include "debug_tools.h"
 #include "mcu_comm.h"
@@ -22,6 +23,8 @@ class Commander
 public:
     // IMU
     Imu imu_;
+    // hipnuc IMU
+    HipnucIMU hipnuc_imu_;
     // 与下板通讯服务
     Class_MCU_Comm MCU_Comm;
     // 与接收机通讯服务

@@ -42,8 +42,10 @@ constexpr uint8_t AUTOAIM_INFO_ID    = 0xFA;
 
 struct McuImuData
 {
-    uint8_t yaw[4];
-    uint8_t pitch[4];
+    uint8_t total_yaw_angle[4];
+    uint8_t pitch_angle[4];
+    uint8_t yaw_omega[4];
+    uint8_t pitch_omega[4];
 };
 constexpr uint8_t IMU_INFO_ID    = 0xAE;
 
@@ -77,6 +79,9 @@ public:
     McuImuData mcu_imu_data_ = {
         {0,0,0,0},
         {0,0,0,0},
+        {0,0,0,0},
+        {0,0,0,0
+        }
     };
 
     Struct_MCU_Recv_Data MCU_Recv_Data = {
