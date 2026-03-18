@@ -66,6 +66,8 @@ void Class_Booster::Task()
             if (fire_allowed)
             {
                 target_omega_3 = -5.0f; // 20
+            } else {
+                target_omega_3 = 0.0f;
             }
         }
         if ((shoot_switch == 0) && (reverse_switch == 1))
