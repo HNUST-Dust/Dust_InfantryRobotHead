@@ -116,11 +116,12 @@ void Class_MCU_Comm::CAN_Gimbal_RxCpltCallback(uint8_t* Rx_Data) {
      // angle 
      memcpy(MCU_Recv_Data.Yaw_Angle, &Rx_Data[0], 4);
      // omega
-     memcpy(MCU_Recv_Data.Yaw_Omega, &Rx_Data[4], 4);
+     // memcpy(MCU_Recv_Data.Yaw_Omega, &Rx_Data[4], 4);
      
      // pitch
      // angle 
-     memcpy(MCU_Recv_Data.Pitch_Angle, &Rx_Data[8], 4);
+     memcpy(MCU_Recv_Data.Pitch_Angle, &Rx_Data[4], 4);
      // omega
-     memcpy(MCU_Recv_Data.Pitch_Omega, &Rx_Data[12], 4);
+     // memcpy(MCU_Recv_Data.Pitch_Omega, &Rx_Data[12], 4);
+     memcpy(MCU_Recv_Data.bullet_speed, &Rx_Data[8], 4);
 }

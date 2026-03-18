@@ -23,9 +23,10 @@ constexpr uint8_t REMOTE_CONTRL_ID = 0xAB;
 struct Struct_MCU_Recv_Data
 {
     uint8_t Yaw_Angle[4];
-    uint8_t Yaw_Omega[4];
+    // uint8_t Yaw_Omega[4];
     uint8_t Pitch_Angle[4];
-    uint8_t Pitch_Omega[4];
+    // uint8_t Pitch_Omega[4];
+    uint8_t bullet_speed[4];
 };
 constexpr uint16_t GIMBAL_INFO_ID      = 0x0A;
 
@@ -88,7 +89,6 @@ public:
         {0x00,0x00,0x00,0x00},
         {0x00,0x00,0x00,0x00},
         {0x00,0x00,0x00,0x00},
-        {0x00,0x00,0x00,0x00}
     };
 
     void Init(FDCAN_HandleTypeDef *hcan,

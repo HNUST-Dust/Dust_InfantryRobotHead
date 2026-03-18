@@ -119,10 +119,10 @@ void Commander::publish_control_info()
     if(vt02_.GetData()->mouse.r == VT02::PRESSED)
     {
         MCU_Comm.MCU_Comm_Data.AutoAim = 1; //自瞄开启
-        Booster.Set_AutoAim_Fire_Statue(1);
+        Booster.Set_AutoAim_Statue(1);
     }else {
         MCU_Comm.MCU_Comm_Data.AutoAim = 0; //自瞄关闭
-        Booster.Set_AutoAim_Fire_Statue(0);
+        Booster.Set_AutoAim_Statue(0);
     }
 
     // 摩擦轮逻辑
@@ -180,14 +180,14 @@ void Commander::publish_control_info()
     MCU_Comm.MCU_Comm_Data.Chassis_Rotation         = (uint8_t)(VT03.Data.Wheel*255);
 
     if((uint8_t)(VT03.Data.Mode_Switch) == 0 
-        || VT03.Data.Keyboard_Key[4] == VT03_Key_Status_PRESSED)//shift
+        || VT03.Data.Keyboard_Key[VT03_KEY_CTRL] == VT03_Key_Status_PRESSED)//ctrl
     {
         MCU_Comm.MCU_Comm_Data.Chassis_Spin = 0; //顺时针转
     }else{
         MCU_Comm.MCU_Comm_Data.Chassis_Spin         = (uint8_t)(VT03.Data.Mode_Switch); //并允许遥控器命令进行覆盖
     }
 
-    if(VT03.Data.Keyboard_Key[VT03_KEY_CTRL] == VT03_Key_Status_PRESSED) // ctrl
+    if(VT03.Data.Keyboard_Key[VT03_KEY_SHIFT] == VT03_Key_Status_PRESSED) // shift
     {
         MCU_Comm.MCU_Comm_Data.Fast_Run = 1; // 快跑
     } else {
@@ -204,10 +204,10 @@ void Commander::publish_control_info()
     if((uint8_t)(VT03.Data.Mouse_Right_Key) == 1)
     {
         MCU_Comm.MCU_Comm_Data.AutoAim = 1; //自瞄开启
-        Booster.Set_AutoAim_Fire_Statue(1);
+        Booster.Set_AutoAim_Statue(1);
     }else {
         MCU_Comm.MCU_Comm_Data.AutoAim = 0; //自瞄关闭
-        Booster.Set_AutoAim_Fire_Statue(0);
+        Booster.Set_AutoAim_Statue(0);
     }
 
     // 左侧自定义按键逻辑
@@ -277,12 +277,11 @@ void Commander::publish_control_info()
 void Commander::transfer_info_to_pc()
 {
 
-    // 重新根据欧拉角重构四元数，但将pitch取反，使得通过四元数解算出的pitch方向相反，yaw/roll保持不变
-    float phi = hipnuc_imu_.roll_angle_rad_;    // roll (rad)
-    float theta = hipnuc_imu_.pitch_angle_rad_;          // pitch (rad)
-    float psi = hipnuc_imu_.yaw_angle_rad_;              // yaw (rad)
+    // 重新根据欧拉角重构四元数：交换 pitch/roll，yaw 保持不变
+    float phi = hipnuc_imu_.roll_angle_rad_;    // roll <- pitch (rad)
+    float theta = hipnuc_imu_.pitch_angle_rad_;   // pitch <- roll (rad)
+    float psi = hipnuc_imu_.yaw_angle_rad_;      // yaw (rad)
     theta = -theta; // 取反pitch
-
     float cy = cosf(psi * 0.5f);
     float sy = sinf(psi * 0.5f);
     float cp = cosf(theta * 0.5f);
@@ -307,18 +306,21 @@ void Commander::transfer_info_to_pc()
         g_q_vision,
         4 * sizeof(float));
     memcpy(&PC_Comm.PC_Send_Data.yaw.yaw_ang, 
-        &g_yaw, 
+        &hipnuc_imu_.yaw_angle_rad_, 
         4);
-    memcpy(&PC_Comm.PC_Send_Data.yaw.yaw_vel, 
-        MCU_Comm.MCU_Recv_Data.Yaw_Omega, 
-        4);
+    // memcpy(&PC_Comm.PC_Send_Data.yaw.yaw_vel, 
+    //     MCU_Comm.MCU_Recv_Data.Yaw_Omega, 
+    //     4);
     memcpy(&PC_Comm.PC_Send_Data.pitch.pitch_ang, 
         &g_pitch_vision, 
         4);
-    memcpy(&PC_Comm.PC_Send_Data.pitch.pitch_vel, 
-        MCU_Comm.MCU_Recv_Data.Pitch_Omega, 
+    // memcpy(&PC_Comm.PC_Send_Data.pitch.pitch_vel, 
+    //     MCU_Comm.MCU_Recv_Data.Pitch_Omega, 
+    //     4);
+    memcpy(&PC_Comm.PC_Send_Data.bullet.bullet_speed, 
+        MCU_Comm.MCU_Recv_Data.bullet_speed, 
         4);
-    PC_Comm.PC_Send_Data.bullet.bullet_speed = 20.0f; // 子弹速度20m/s
+    // PC_Comm.PC_Send_Data.bullet.bullet_speed = 20.0f; // 子弹速度20m/s
     PC_Comm.PC_Send_Data.bullet.bullet_count = 1; // 子弹累计发送次数
     PC_Comm.PC_Send_Data.crc16 = 0; // TODO: 计算CRC16校验码
 
@@ -395,12 +397,15 @@ void Commander::Task()
         subscribe_info_from_pc();
         publish_posture_info_to_bottomboard();
 
-        debugtools_.VofaSendFloat(Booster.target_omega_3);
-        debugtools_.VofaSendFloat(Booster.Motor_Booster_3.Get_Now_Omega());
-        debugtools_.VofaSendFloat(Booster.target_omega_1);
-        debugtools_.VofaSendFloat(Booster.Motor_Booster_1.Get_Now_Omega());
-        debugtools_.VofaSendFloat(Booster.target_omega_2);
-        debugtools_.VofaSendFloat(Booster.Motor_Booster_2.Get_Now_Omega());
+        debugtools_.VofaSendFloat((float)PC_Comm.PC_Recv_Data.mode);
+        // debugtools_.VofaSendFloat(PC_Comm.PC_Send_Data.pitch.pitch_ang);
+        // debugtools_.VofaSendFloat(PC_Comm.PC_Send_Data.bullet.bullet_speed);
+        // debugtools_.VofaSendFloat(Booster.target_omega_3);
+        // debugtools_.VofaSendFloat(Booster.Motor_Booster_3.Get_Now_Omega());
+        // debugtools_.VofaSendFloat(Booster.target_omega_1);
+        // debugtools_.VofaSendFloat(Booster.Motor_Booster_1.Get_Now_Omega());
+        // debugtools_.VofaSendFloat(Booster.target_omega_2);
+        // debugtools_.VofaSendFloat(Booster.Motor_Booster_2.Get_Now_Omega());
         // debugtools_.VofaSendFloat((float)vt02_.GetData()->mouse.z);
         debugtools_.VofaSendTail();
         osDelay(pdMS_TO_TICKS(1));
