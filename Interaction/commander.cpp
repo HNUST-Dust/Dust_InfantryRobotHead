@@ -29,6 +29,11 @@ void Commander::Init()
     // 发射机构初始化
     Booster.Init();
 
+    constexpr float kCommanderLoopDt = 0.001f;
+    constexpr float kMouseCutoffHz = 40.0f;
+    mouse_x_lpf_.Init(kMouseCutoffHz, kCommanderLoopDt);
+    // mouse_y_lpf_.Init(kMouseCutoffHz, kCommanderLoopDt);
+
     static const osThreadAttr_t CommanderTaskAttr = {
         .name = "CommanderTask",
         .stack_size = 512,
@@ -161,6 +166,9 @@ void Commander::publish_control_info()
 
 #endif
 #ifndef USE_VT02
+    // const float mouse_x_filtered = mouse_x_lpf_.Update(VT03.Data.Mouse_X);
+    // const float mouse_y_filtered = mouse_y_lpf_.Update(VT03.Data.Mouse_Y);
+
     MCU_Comm.MCU_Comm_Data.Yaw_Angle            = (uint8_t)((VT03.Data.Right_X 
         + VT03.Data.Mouse_X)*255);
     MCU_Comm.MCU_Comm_Data.Pitch_Angle          = (uint8_t)((VT03.Data.Right_Y 

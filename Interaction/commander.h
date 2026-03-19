@@ -14,6 +14,7 @@
 #include "debug_tools.h"
 #include "mcu_comm.h"
 #include "pc_comm.h"
+#include "low_pass_filter.hpp"
 #include "VT03.h"
 #include "VT02.h"
 
@@ -51,6 +52,8 @@ private:
     uint8_t chassis_speed_y = 127;
     uint8_t target_speed_x = 127;
     uint8_t target_speed_y = 127;
+    LowPassFilter mouse_x_lpf_;
+    LowPassFilter mouse_y_lpf_;
     // FreeRTOS 入口，静态函数
     static void TaskEntry(void *param);
     void control_data_process();

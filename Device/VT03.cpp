@@ -4,7 +4,7 @@
 
 /* Private macros ------------------------------------------------------------*/
 #define MOUSE_SENSITIVITY_X (40.0f)
-#define MOUSE_SENSITIVITY_Y (-8.0f)
+#define MOUSE_SENSITIVITY_Y (-0.8f)
 /* Private types -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -228,6 +228,11 @@ void Class_VT03::Data_Process(uint16_t Length)
         // 鼠标信息
         Data.Mouse_X = tmp_buffer->Mouse_X / 32768.0f * MOUSE_SENSITIVITY_X; // -30 ～ 30
         Data.Mouse_Y -= tmp_buffer->Mouse_Y / 32768.0f * MOUSE_SENSITIVITY_Y;
+        if (Data.Mouse_X > 0.5f){
+            Data.Mouse_X = 0.5f;
+        }else if(Data.Mouse_X < -0.5f){
+            Data.Mouse_X = -0.5f;
+        }
         if(Data.Mouse_Y > 0.5f){
             Data.Mouse_Y = 0.5f;
         }else if(Data.Mouse_Y < -0.5f){
