@@ -109,24 +109,24 @@ void Commander::publish_control_info()
     
     if(vt02_.GetData()->keyboard[VT02_KEY_SHIFT].current_status == VT02::PRESSED)//shift
     {
-        MCU_Comm.MCU_Comm_Data.Chassis_Spin = 0; //顺时针转
+        MCU_Comm.MCU_Comm_Data.Switch.Chassis_Spin = 0; //顺时针转
     }else{
-        MCU_Comm.MCU_Comm_Data.Chassis_Spin = 1;
+        MCU_Comm.MCU_Comm_Data.Switch.Chassis_Spin = 1;
     }
 
     if(vt02_.GetData()->keyboard[VT02_KEY_E].key_status == VT02::TRIG_PRESSED_FREE)//E键
     {
-        MCU_Comm.MCU_Comm_Data.Supercap = 1; //放电
+        MCU_Comm.MCU_Comm_Data.Switch.Supercap = 1; //放电
     }else{
-        MCU_Comm.MCU_Comm_Data.Supercap = 0; //充电
+        MCU_Comm.MCU_Comm_Data.Switch.Supercap = 0; //充电
     }
 
     if(vt02_.GetData()->mouse.r == VT02::PRESSED)
     {
-        MCU_Comm.MCU_Comm_Data.AutoAim = 1; //自瞄开启
+        MCU_Comm.MCU_Comm_Data.Switch.AutoAim = 1; //自瞄开启
         Booster.Set_AutoAim_Statue(1);
     }else {
-        MCU_Comm.MCU_Comm_Data.AutoAim = 0; //自瞄关闭
+        MCU_Comm.MCU_Comm_Data.Switch.AutoAim = 0; //自瞄关闭
         Booster.Set_AutoAim_Statue(0);
     }
 
@@ -140,7 +140,7 @@ void Commander::publish_control_info()
         }else if(Booster.Get_Switch_Statue() == 0){
             Booster.Set_Switch_Statue(1);
             
-            MCU_Comm.MCU_Comm_Data.Booster_Status = 1;
+            MCU_Comm.MCU_Comm_Data.Switch.Booster_Status = 1;
         }
     }
 
@@ -149,7 +149,7 @@ void Commander::publish_control_info()
         // ★ 消费事件，防止重复触发
         vt02_.GetData()->keyboard[VT02_KEY_B].key_status
             = VT02::FREE;
-        MCU_Comm.MCU_Comm_Data.Gimbal_SetZero = 1;
+        MCU_Comm.MCU_Comm_Data.Switch.Gimbal_SetZero = 1;
     }
 
     //拨弹盘逻辑
@@ -157,7 +157,7 @@ void Commander::publish_control_info()
         Booster.Set_Reverse_Statue(1);
     }else {
         Booster.Set_Reverse_Statue(0);
-    }   
+    }
     if (vt02_.GetData()->mouse.l == VT02::PRESSED){
         Booster.Set_Shoot_Statue(1);
     }else if (vt02_.GetData()->mouse.l == VT02::FREE){
@@ -192,29 +192,29 @@ void Commander::publish_control_info()
     {
         MCU_Comm.MCU_Comm_Data.Chassis_Spin = 0; //顺时针转
     }else{
-        MCU_Comm.MCU_Comm_Data.Chassis_Spin         = (uint8_t)(VT03.Data.Mode_Switch); //并允许遥控器命令进行覆盖
+        MCU_Comm.MCU_Comm_Data.Chassis_Spin = (uint8_t)(VT03.Data.Mode_Switch); //并允许遥控器命令进行覆盖
     }
 
     if(VT03.Data.Keyboard_Key[VT03_KEY_SHIFT] == VT03_Key_Status_PRESSED) // shift
     {
-        MCU_Comm.MCU_Comm_Data.Fast_Run = 1; // 快跑
+        MCU_Comm.MCU_Comm_Data.Switch.Fast_Run = 1; // 快跑
     } else {
-        MCU_Comm.MCU_Comm_Data.Fast_Run = 0; // 慢走
+        MCU_Comm.MCU_Comm_Data.Switch.Fast_Run = 0; // 慢走
     }
     if((uint8_t)(VT03.Data.Pause) == 1 
         || VT03.Data.Keyboard_Key[7] == VT03_Key_Status_PRESSED)//E键
     {
-        MCU_Comm.MCU_Comm_Data.Supercap = 1; //放电
+        MCU_Comm.MCU_Comm_Data.Switch.Supercap = 1; //放电
     }else{
-        MCU_Comm.MCU_Comm_Data.Supercap = 0; //充电
+        MCU_Comm.MCU_Comm_Data.Switch.Supercap = 0; //充电
     }
     
     if((uint8_t)(VT03.Data.Mouse_Right_Key) == 1)
     {
-        MCU_Comm.MCU_Comm_Data.AutoAim = 1; //自瞄开启
+        MCU_Comm.MCU_Comm_Data.Switch.AutoAim = 1; //自瞄开启
         Booster.Set_AutoAim_Statue(1);
     }else {
-        MCU_Comm.MCU_Comm_Data.AutoAim = 0; //自瞄关闭
+        MCU_Comm.MCU_Comm_Data.Switch.AutoAim = 0; //自瞄关闭
         Booster.Set_AutoAim_Statue(0);
     }
 
@@ -243,14 +243,30 @@ void Commander::publish_control_info()
             Booster.Set_Switch_Statue(1);
         }
     }
+    if (Booster.Get_Switch_Statue() == 1)
+    {
+        MCU_Comm.MCU_Comm_Data.Switch.Booster_Status = 1;
+    } else {
+        MCU_Comm.MCU_Comm_Data.Switch.Booster_Status = 0;
+    }
 
     // 云台归零逻辑（消费事件，防止重复触发）
     if (VT03.Data.Keyboard_Key[VT03_KEY_B] == VT03_Key_Status_TRIG_PRESSED_FREE)
     {
         // ★ 消费事件，防止重复触发
         VT03.Data.Keyboard_Key[VT03_KEY_B] = VT03_Key_Status_FREE;
-        MCU_Comm.MCU_Comm_Data.Gimbal_SetZero = 1;
+        MCU_Comm.MCU_Comm_Data.Switch.Gimbal_SetZero = 1;
     }
+
+    if (VT03.Data.Keyboard_Key[VT03_KEY_V] == VT03_Key_Status_TRIG_PRESSED_FREE) // V键刷新UI界面
+    {
+        // ★ 消费事件，防止重复触发
+        VT03.Data.Keyboard_Key[VT03_KEY_V] = VT03_Key_Status_FREE;
+        MCU_Comm.MCU_Comm_Data.Switch.Refresh_UI = 1; // 刷新UI界面
+    } else {
+        MCU_Comm.MCU_Comm_Data.Switch.Refresh_UI = 0;
+    }
+
     //拨弹盘逻辑（与VT02一致：R键按住退弹）
     if (VT03.Data.Keyboard_Key[VT03_KEY_R] == VT03_Key_Status_PRESSED
         || VT03.Data.Right_Key == VT03_Key_Status_PRESSED)
@@ -275,10 +291,10 @@ void Commander::publish_control_info()
 #endif
     // 将遥控器数据发给下板
     MCU_Comm.CANSendCommandAndUI();
-    if(MCU_Comm.MCU_Comm_Data.Gimbal_SetZero == 1)
+    if(MCU_Comm.MCU_Comm_Data.Switch.Gimbal_SetZero == 1)
     {
         // 发送完成后归零
-        MCU_Comm.MCU_Comm_Data.Gimbal_SetZero = 0;
+        MCU_Comm.MCU_Comm_Data.Switch.Gimbal_SetZero = 0;
     }
 }
 

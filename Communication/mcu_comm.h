@@ -11,12 +11,17 @@ struct Struct_MCU_Comm_Data
     uint8_t Chassis_Speed_X;    // 平移方向：前、后、左、右
     uint8_t Chassis_Speed_Y;    // 底盘移动总速度
     uint8_t Chassis_Rotation;   // 自转：不转、顺时针转、逆时针转
-    uint8_t Chassis_Spin;       // 小陀螺：不转、顺时针转、逆时针转
-    uint8_t Supercap;           // 超级电容：充电、放电
-    uint8_t AutoAim;            // 自瞄开关
-    uint8_t Gimbal_SetZero;     // 云台归零
-    uint8_t Booster_Status;     // 发射机构状态
-    uint8_t Fast_Run;           // 快跑开关
+    uint8_t Chassis_Spin;      // 小陀螺：1-不转，0-顺时针转, 2保护
+    struct
+    {
+        uint8_t Supercap : 1;          // 超级电容：充电、放电
+        uint8_t AutoAim : 1;           // 自瞄开关
+        uint8_t Gimbal_SetZero : 1;    // 云台归零
+        uint8_t Booster_Status : 1;    // 发射机构状态
+        uint8_t Fast_Run : 1;          // 快跑开关
+        uint8_t Refresh_UI : 1;        // 刷新UI界面
+        uint8_t Reserved : 2;
+    } Switch;
 };
 constexpr uint8_t REMOTE_CONTRL_ID = 0xAB;
 
@@ -61,11 +66,15 @@ public:
         127,
         127,
         1,
-        1,
-        0,
-        0,
-        0,
-        0
+        {
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        }
     };
 
     McuAutoaimData MCU_AutoAim_Data = {

@@ -26,20 +26,21 @@ void Class_MCU_Comm::Init(
 
 void Class_MCU_Comm::CANSendCommandAndUI()
 {
-     static uint8_t CAN_Tx_Frame[12]; 
+     static uint8_t CAN_Tx_Frame[8];
      CAN_Tx_Frame[0] = MCU_Comm_Data.Yaw_Angle;
      CAN_Tx_Frame[1] = MCU_Comm_Data.Pitch_Angle;
      CAN_Tx_Frame[2] = MCU_Comm_Data.Chassis_Speed_X;
      CAN_Tx_Frame[3] = MCU_Comm_Data.Chassis_Speed_Y;
      CAN_Tx_Frame[4] = MCU_Comm_Data.Chassis_Rotation;
-     CAN_Tx_Frame[5] = MCU_Comm_Data.Chassis_Spin;
-     CAN_Tx_Frame[6] = MCU_Comm_Data.Supercap;
-     CAN_Tx_Frame[7] = MCU_Comm_Data.AutoAim;
-     CAN_Tx_Frame[8] = MCU_Comm_Data.Gimbal_SetZero;
-     CAN_Tx_Frame[9] = MCU_Comm_Data.Booster_Status;
-     CAN_Tx_Frame[10] = MCU_Comm_Data.Fast_Run;
-     
-     FDCAN_Send_Data(CAN_Manage_Object->CAN_Handler, REMOTE_CONTRL_ID, CAN_Tx_Frame, 12);
+     CAN_Tx_Frame[5] = (MCU_Comm_Data.Chassis_Spin);
+     CAN_Tx_Frame[6] = 0;
+     CAN_Tx_Frame[6] |= (MCU_Comm_Data.Switch.Supercap & 0x01u) << 0;
+     CAN_Tx_Frame[6] |= (MCU_Comm_Data.Switch.AutoAim & 0x01u) << 1;
+     CAN_Tx_Frame[6] |= (MCU_Comm_Data.Switch.Gimbal_SetZero & 0x01u) << 2;
+     CAN_Tx_Frame[6] |= (MCU_Comm_Data.Switch.Booster_Status & 0x01u) << 3;
+     CAN_Tx_Frame[6] |= (MCU_Comm_Data.Switch.Fast_Run & 0x01u) << 4;
+     CAN_Tx_Frame[6] |= (MCU_Comm_Data.Switch.Refresh_UI & 0x01u) << 5;
+     FDCAN_Send_Data(CAN_Manage_Object->CAN_Handler, REMOTE_CONTRL_ID, CAN_Tx_Frame, 8);
 }
 
 void Class_MCU_Comm::CAN_Send_AutoAim()
