@@ -47,10 +47,10 @@ void Class_Booster::Task()
 {
     for (;;) {
 
-        // 摩擦轮目标速度（兼容旧逻辑：默认 45 rad/s；若外部设置了 Target_Velocity 则用外部值）
+        // 摩擦轮目标速度（兼容旧逻辑：默认 40 rad/s；若外部设置了 Target_Velocity 则用外部值）
         if (start_switch == 1)
         {
-            const float friction_omega = 45.0f;
+            const float friction_omega = 40.0f;
             target_omega_1 = friction_omega;
             target_omega_2 = -(friction_omega + 5.0f);
         }else if(start_switch == 0){
