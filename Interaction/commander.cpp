@@ -288,6 +288,7 @@ void Commander::publish_control_info()
     {
         Booster.Set_Shoot_Statue(0);
     }
+    MCU_Comm.MCU_Comm_Data.Chassis_Rotation         = (uint8_t)((VT03.Data.Wheel)*255); // 旋转拨轮控制底盘旋转速度
 #endif
     // 将遥控器数据发给下板
     MCU_Comm.CANSendCommandAndUI();
@@ -300,7 +301,6 @@ void Commander::publish_control_info()
 
 void Commander::transfer_info_to_pc()
 {
-
     // 重新根据欧拉角重构四元数：交换 pitch/roll，yaw 保持不变
     float phi = hipnuc_imu_.roll_angle_rad_;    // roll <- pitch (rad)
     float theta = hipnuc_imu_.pitch_angle_rad_;   // pitch <- roll (rad)
