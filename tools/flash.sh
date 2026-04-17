@@ -1,0 +1,1 @@
+openocd -f Config/openocd_dap.cfg -c "program build/Dust_InfantryRobotHead.bin verify reset exit 0x08000000"

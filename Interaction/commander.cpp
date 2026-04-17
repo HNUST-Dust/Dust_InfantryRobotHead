@@ -170,9 +170,9 @@ void Commander::publish_control_info()
     // const float mouse_y_filtered = mouse_y_lpf_.Update(VT03.Data.Mouse_Y);
 
     MCU_Comm.MCU_Comm_Data.Yaw_Angle            = (uint8_t)((VT03.Data.Right_X 
-        + VT03.Data.Mouse_X)*255);
+        + VT03.Data.Mouse_X ) * 127 + 127);
     MCU_Comm.MCU_Comm_Data.Pitch_Angle          = (uint8_t)((VT03.Data.Right_Y 
-        + VT03.Data.Mouse_Y)*255);
+        + VT03.Data.Mouse_Y ) * 127 + 127);
 
     if(target_speed_x == 127){
         MCU_Comm.MCU_Comm_Data.Chassis_Speed_X      = (uint8_t)(VT03.Data.Left_X * 255);
@@ -421,7 +421,9 @@ void Commander::Task()
         subscribe_info_from_pc();
         publish_posture_info_to_bottomboard();
 
-        debugtools_.VofaSendFloat((float)PC_Comm.PC_Recv_Data.mode);
+        debugtools_.VofaSendFloat(VT03.Data.Mouse_X);
+        debugtools_.VofaSendFloat(MCU_Comm.MCU_Comm_Data.Pitch_Angle);
+        // debugtools_.VofaSendFloat((float)PC_Comm.PC_Recv_Data.mode);
         // debugtools_.VofaSendFloat(PC_Comm.PC_Send_Data.pitch.pitch_ang);
         // debugtools_.VofaSendFloat(PC_Comm.PC_Send_Data.bullet.bullet_speed);
         // debugtools_.VofaSendFloat(Booster.target_omega_3);

@@ -133,10 +133,10 @@ class Class_VT03
 public:
     // 遥控器VT03对外接口信息
     Struct_VT03_Data Data = {
-        127,
-        127,
-        127,
-        127,
+        0.0f,
+        0.0f,
+        0.5f,
+        0.5f,
         VT03_STATUS_MIDDLE,
         0.0f,
         0.0f,

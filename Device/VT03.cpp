@@ -184,17 +184,17 @@ void Class_VT03::Data_Process(uint16_t Length)
     Struct_Remote_Data *tmp_buffer = (Struct_Remote_Data *) UART_Manage_Object->Rx_Buffer;
     if((tmp_buffer->Start_Of_Frame_1 == 0xA9) && (tmp_buffer->Start_Of_Frame_2 == 0x53)){
         // 摇杆信息
-        Data.Right_X = (tmp_buffer->Channel_0 - Rocker_Offset) / Rocker_Num; //右摇杆水平 0～0.99
-        if(Data.Right_X > 0.99f){
-            Data.Right_X = 0.99f;
-        }else if(Data.Right_X < -0.99f){
-            Data.Right_X = -0.99f;
+        Data.Right_X = (tmp_buffer->Channel_0 - Rocker_Offset - 0.5f * Rocker_Num) / Rocker_Num; //右摇杆水平 0～0.99
+        if(Data.Right_X > 0.5f){
+            Data.Right_X = 0.5f;
+        }else if(Data.Right_X < -0.5f){
+            Data.Right_X = -0.5f;
         }
-        Data.Right_Y = (tmp_buffer->Channel_1 - Rocker_Offset) / Rocker_Num; // 右摇杆竖直
-        if(Data.Right_X > 0.99f){
-            Data.Right_X = 0.99f;
-        }else if(Data.Right_X < -0.99f){
-            Data.Right_X = -0.99f;
+        Data.Right_Y = (tmp_buffer->Channel_1 - Rocker_Offset - 0.5f * Rocker_Num) / Rocker_Num; // 右摇杆竖直
+        if(Data.Right_Y > 0.5f){
+            Data.Right_Y = 0.5f;
+        }else if(Data.Right_Y < -0.5f){
+            Data.Right_Y = -0.5f;
         }
         Data.Left_X = (tmp_buffer->Channel_2 - Rocker_Offset) / Rocker_Num;  // 左摇杆竖直
         Data.Left_Y = (tmp_buffer->Channel_3 - Rocker_Offset) / Rocker_Num;  // 左摇杆水平
